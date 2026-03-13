@@ -1,1 +1,1 @@
-# UniHorary
+# HoraClass
