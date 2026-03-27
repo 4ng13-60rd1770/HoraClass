@@ -1,3 +1,11 @@
+# Ejecutar todo el proyecto
+./start.sh    
+# Parar proyecto 
+./stop.sh    
+# Conectar BD
+docker compose -f docker-compose.yaml exec db psql -U postgres -d horaclass
+
+
 # Solo frontend
 docker compose -f docker-compose.yaml up frontend --build -d
 
@@ -16,5 +24,4 @@ docker compose -f docker-compose.yaml exec frontend sh
 # Test BD
 docker compose -f docker-compose.yaml exec db psql -U postgres -d horaclass -c "\dt"
 
-# Conectar BD
-docker compose -f docker-compose.yaml exec db psql -U postgres -d horaclass
+
