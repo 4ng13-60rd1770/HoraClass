@@ -1,0 +1,482 @@
+.admin-page-title {
+  margin: 0 0 0.35rem;
+  font-size: 1.55rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-page-desc {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: color-mix(in srgb, var(--text) 85%, var(--secondary));
+  line-height: 1.45;
+}
+
+.admin-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.admin-card {
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--secondary) 22%, transparent);
+  border-radius: 10px;
+  padding: 1.1rem 1.15rem;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.admin-card__label {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--text) 70%, transparent);
+}
+
+.admin-card__value {
+  margin: 0.4rem 0 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.admin-panel {
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--secondary) 22%, transparent);
+  border-radius: 10px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.admin-panel h2 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-placeholder-list {
+  margin: 0;
+  padding-left: 1.1rem;
+  color: color-mix(in srgb, var(--text) 88%, var(--secondary));
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.calendar-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-toolbar__month {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.calendar-weekdays span {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-align: center;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+  padding: 0.35rem 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text);
+  background: color-mix(in srgb, var(--primary) 55%, #fff);
+  border-radius: 8px;
+  border: 1px solid transparent;
+}
+
+.calendar-day--muted {
+  color: color-mix(in srgb, var(--text) 38%, transparent);
+  background: color-mix(in srgb, var(--primary) 80%, #fff);
+}
+
+.calendar-day--today {
+  border-color: var(--secondary);
+  background: color-mix(in srgb, var(--secondary) 18%, #fff);
+  font-weight: 700;
+}
+
+.calendar-day {
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+  min-height: 48px;
+  height: auto;
+  aspect-ratio: auto;
+}
+
+.calendar-day--events {
+  border-color: color-mix(in srgb, var(--text) 12%, transparent);
+}
+
+.calendar-day__num {
+  line-height: 1;
+}
+
+.calendar-day__dots {
+  display: flex;
+  gap: 3px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+
+.calendar-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  opacity: 0.55;
+}
+
+.calendar-dot--clase {
+  background: var(--secondary);
+  opacity: 0.9;
+}
+
+.calendar-dot--examen {
+  background: #c2410c;
+  opacity: 0.85;
+}
+
+.calendar-dot--reunion {
+  background: #0369a1;
+  opacity: 0.85;
+}
+
+.admin-panel--mt {
+  margin-top: 1.25rem;
+}
+
+.admin-muted-caption {
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--text) 72%, transparent);
+}
+
+.admin-activity-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-activity-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.admin-activity-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.admin-activity-item:first-child {
+  padding-top: 0;
+}
+
+.admin-activity-item__text {
+  font-size: 0.9rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.admin-activity-item__time {
+  font-size: 0.75rem;
+  color: color-mix(in srgb, var(--text) 62%, transparent);
+}
+
+.admin-table-wrap {
+  overflow-x: auto;
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--secondary) 22%, transparent);
+  border-radius: 10px;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--text) 6%, transparent);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.admin-table th,
+.admin-table td {
+  text-align: left;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  vertical-align: top;
+}
+
+.admin-table th {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--text) 72%, transparent);
+  background: color-mix(in srgb, var(--primary) 40%, #fff);
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr:hover td {
+  background: color-mix(in srgb, var(--secondary) 6%, #fff);
+}
+
+.admin-table__mono {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.84rem;
+}
+
+.admin-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--primary) 50%, #fff);
+  color: var(--text);
+}
+
+.admin-badge--clase {
+  background: color-mix(in srgb, var(--secondary) 22%, #fff);
+}
+
+.admin-badge--examen {
+  background: #ffedd5;
+  color: #9a3412;
+}
+
+.admin-badge--reunion {
+  background: #e0f2fe;
+  color: #075985;
+}
+
+.admin-badge--activo {
+  background: color-mix(in srgb, var(--secondary) 20%, #fff);
+}
+
+.admin-badge--inactivo {
+  background: color-mix(in srgb, var(--text) 12%, transparent);
+  color: color-mix(in srgb, var(--text) 75%, #000);
+}
+
+.admin-badge--estado-confirmada {
+  background: color-mix(in srgb, var(--secondary) 22%, #fff);
+}
+
+.admin-badge--estado-pendiente {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.admin-badge--estado-cancelada {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.admin-event-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.admin-event-row {
+  display: grid;
+  grid-template-columns: 72px 52px 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--text) 8%, transparent);
+  font-size: 0.88rem;
+}
+
+.admin-event-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.admin-event-row:first-child {
+  padding-top: 0;
+}
+
+.admin-event-row__date {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.admin-event-row__hora {
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--text) 75%, transparent);
+}
+
+.admin-event-row__titulo {
+  color: var(--text);
+  line-height: 1.35;
+}
+
+@media (max-width: 560px) {
+  .admin-event-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+}
+
+/* Profesores — vista tarjetas */
+.prof-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.prof-card {
+  background: #fff;
+  border: 1px solid color-mix(in srgb, var(--secondary) 22%, transparent);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 12px color-mix(in srgb, var(--text) 6%, transparent);
+  display: flex;
+  flex-direction: column;
+  transition:
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.prof-card:hover {
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--text) 10%, transparent);
+  transform: translateY(-2px);
+}
+
+.prof-card__media {
+  position: relative;
+  aspect-ratio: 6 / 7;
+  background: color-mix(in srgb, var(--primary) 70%, #ccc);
+  overflow: hidden;
+}
+
+.prof-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.prof-card__badge {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.28rem 0.5rem;
+  border-radius: 6px;
+  backdrop-filter: blur(8px);
+}
+
+.prof-card__badge--activo {
+  background: color-mix(in srgb, var(--secondary) 88%, transparent);
+  color: var(--text);
+}
+
+.prof-card__badge--inactivo {
+  background: color-mix(in srgb, #fff 55%, #888);
+  color: #292524;
+}
+
+.prof-card__body {
+  padding: 1rem 1.1rem 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.prof-card__name {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.prof-card__meta {
+  margin: 0;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--text) 78%, var(--secondary));
+  line-height: 1.35;
+}
+
+.prof-card__email {
+  margin-top: 0.15rem;
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--text) 55%, #0c4a6e);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.prof-card__email:hover {
+  text-decoration: underline;
+}
+
+.prof-card__hours {
+  margin: 0.6rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.prof-card__hours-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--text) 65%, transparent);
+}
+
+.prof-card__hours-value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
