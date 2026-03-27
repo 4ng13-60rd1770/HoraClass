@@ -1,6 +1,5 @@
-# backend/Dockerfile SIMPLE
-FROM eclipse-temurin:17-jre-alpine
-WORKDIR /app
-COPY . .
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/
+COPY . /usr/share/nginx/html
 EXPOSE 8080
-CMD ["sh", "-c", "echo 'Backend Java listo!' && tail -f /dev/null"]
+CMD ["nginx", "-g", "daemon off;"]
