@@ -125,3 +125,6 @@ CREATE TABLE GRUPO (
     FOREIGN KEY (IdProfesor) REFERENCES PROFESOR(IdProfesor),
     FOREIGN KEY (IdEstadoGrupo) REFERENCES ESTADO_GRUPO(IdEstadoGrupo)
 );
+
+
+
