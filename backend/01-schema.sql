@@ -1,4 +1,5 @@
 
+-- CAMBIAR A ESTADOUSUARIO
 CREATE TABLE ESTADO (
     idEstado INT PRIMARY KEY,
     nombre VARCHAR(50)
@@ -23,7 +24,7 @@ CREATE TABLE USUARIO (
 
 
 -- =========================
--- DATOS INICIALES (Catálogos básicos)
+-- DATOS INICIALES (Catálogos básicos)ESTADOUSUARIO
 -- =========================
 INSERT INTO ESTADO (idEstado, nombre) VALUES 
 (1, 'ACTIVO'),
@@ -81,5 +82,46 @@ INSERT INTO CURSO (IdCurso, Nombre, Semestre, Creditos, IdModalidad, IdTipoCurso
 INSERT INTO CURSO (IdCurso, Nombre, Semestre, Creditos, IdModalidad, IdTipoCurso) VALUES
 (102, 'Ingeniería de Software', 6, 3, 3, 1);  -- Modalidad=Híbrida, Tipo=Teórico
 
+-- =========================
+-- TABLA ESTADO_GRUPO (Catálogo)
+-- =========================
+CREATE TABLE ESTADO_GRUPO (
+    IdEstadoGrupo INT PRIMARY KEY,
+    Nombre VARCHAR(50) NOT NULL
+);
 
+-- =========================
+-- DATOS INICIALES
+-- =========================
+INSERT INTO ESTADO_GRUPO (IdEstadoGrupo, Nombre) VALUES 
+(1, 'ACTIVO'),
+(2, 'CERRADO'),
+(3, 'CANCELADO')
+ON CONFLICT (IdEstadoGrupo) DO NOTHING;
+--===========
+--Profesor
+--===========
 
+CREATE TABLE PROFESOR (
+    IdProfesor BIGINT PRIMARY KEY,     -- ← PK
+    Departamento VARCHAR(100),
+    Especialidad VARCHAR(100),
+    CargaHoras INT NOT NULL,
+    Escalafon VARCHAR(50),
+    FOREIGN KEY (IdProfesor) REFERENCES USUARIO(idUsuario)  -- ← FK a la vez
+);
+
+--========
+--Grupos
+--========
+CREATE TABLE GRUPO (
+    IdGrupo VARCHAR(20) PRIMARY KEY,   
+    IdCurso INT NOT NULL,
+    IdProfesor BIGINT NOT NULL,
+    CupoMaximo INT NOT NULL CHECK (CupoMaximo >= 10),
+    CupoMinimo INT NOT NULL CHECK (CupoMinimo >= 1 AND CupoMinimo <= CupoMaximo),
+    IdEstadoGrupo INT NOT NULL,
+    FOREIGN KEY (IdCurso) REFERENCES CURSO(IdCurso),
+    FOREIGN KEY (IdProfesor) REFERENCES PROFESOR(IdProfesor),
+    FOREIGN KEY (IdEstadoGrupo) REFERENCES ESTADO_GRUPO(IdEstadoGrupo)
+);
