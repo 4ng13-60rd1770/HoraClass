@@ -1,0 +1,29 @@
+# Frontend React/Vite
+frontend/node_modules/
+frontend/dist/
+frontend/.env*
+frontend/.vite/
+frontend/coverage/
+
+# Backend Java
+backend/target/
+backend/build/
+backend/.mvn/wrapper/maven-wrapper.jar
+backend/mvnw
+backend/mvnw.cmd
+backend/gradle/
+backend/.gradle/
+
+# Docker
+.dockerignore
+README.md
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
