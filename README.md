@@ -1,67 +1,20 @@
-# 🚀 HoraClass - Monorepo Dockerizado
+# Solo frontend
+docker compose -f docker-compose.yaml up frontend --build -d
 
+# Solo backend
+docker compose -f docker-compose.yaml up backend --build -d
 
-🎉 ¡Listo en 1 comando!
-```bash
+# Reiniciar frontend
+docker compose -f docker-compose.yaml restart frontend
 
-git clone https://github.com/4ng13-60rd1770/HoraClass
-cd HoraClass
-chmod +x *.sh
-./start.sh
-```
+# Logs frontend
+docker compose -f docker-compose.yaml logs -f frontend
 
-## 🎬 **Comandos Rápidos**
+# Entrar contenedor
+docker compose -f docker-compose.yaml exec frontend sh
 
-### 🚀 **Iniciar (1 comando)**
-```bash
-./start.sh
-# o
-docker compose up --build -d
-```
+# Test BD
+docker compose -f docker-compose.yaml exec db psql -U postgres -d horaclass -c "\dt"
 
-**Detener:**
-```bash
-./stop.sh
-# o
-docker compose down
-```
-### URL´s
-```bash
-
-🌐 Frontend: http://localhost:3000
-🔧 Backend: http://localhost:8080
-```
-
-### 📋 Status & Logs
-```bash
-
-./status.sh          # Status
-docker compose logs -f  # Logs live
-```
-
-### 🧪 Comandos Docker Compose V2
-```bash
-
-docker compose up --build -d     # 🚀 Start
-docker compose ps                # 📊 Status
-docker compose logs -f           # 📋 Logs
-docker compose down              # 🛑 Stop
-docker compose down --rmi all    # 💥 Clean
-```
-
-
-### 👨‍💻 Desarrollo local
-```bash
-
-cd frontend
-npm install
-npm run dev      # http://localhost:5173 (Vite dev)
-```
-
-### 📈 Status esperado
-```bash
-
-NAME                  STATUS
-horaclass-frontend    Up (healthy)
-horaclass-backend     Up (healthy)
-```
+# Conectar BD
+docker compose -f docker-compose.yaml exec db psql -U postgres -d horaclass
