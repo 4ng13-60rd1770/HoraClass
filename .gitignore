@@ -1,29 +1,32 @@
-# Frontend React/Vite
-frontend/node_modules/
-frontend/dist/
-frontend/.env*
-frontend/.vite/
-frontend/coverage/
+# Logs de errores
+build_errors*.txt
+boot_error.log
+bootError2.log
 
-# Backend Java
+# Scripts de generación de código
+gen_all_services.py
+gen_phase1.py
+generate_controllers.py
+
+# Maven
 backend/target/
-backend/build/
 backend/.mvn/wrapper/maven-wrapper.jar
-backend/mvnw
-backend/mvnw.cmd
-backend/gradle/
-backend/.gradle/
+!backend/.mvn/wrapper/maven-wrapper.properties
 
-# Docker
-.dockerignore
-README.md
-.DS_Store
+# Gradle
+backend/.gradle/
+backend/build/
 
 # IDE
-.vscode/
 .idea/
-*.swp
-*.swo
+*.iml
+.vscode/
+*.eclipse
 
-# Logs
-*.log
+# Frontend build
+frontend/node_modules/
+frontend/build/
+
+# OS
+.DS_Store
+Thumbs.db

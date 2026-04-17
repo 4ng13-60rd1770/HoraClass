@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <h2 class="logo">Dashboard</h2>
+    <ul class="menu">
+      <li class="active">Dashboard</li>
+      <li>Calendarios</li>
+      <li>Salones</li>
+      <li>Profesores</li>
+      <li>Estudiantes</li>
+    </ul>
+
+    <div class="user">
+      <img src="https://i.pravatar.cc/40" alt="">
+      <div>
+        <p>Vivian Tellez</p>
+        <span>Secretaria</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <h1>Progreso de la Planeación</h1>
+    <p class="subtitle">Año Académico: 2026-1</p>
+
+    <!-- Cards -->
+    <div class="cards">
+
+      <div class="card">
+        <p>Estudiantes Registrados</p>
+        <h2>12,480 / 15,600</h2>
+      </div>
+
+      <div class="card">
+        <p>Disponibilidad de Aula</p>
+        <h2>16 / 30</h2>
+        <span class="success">Disponible</span>
+      </div>
+
+      <div class="card">
+        <p>Docentes sin Asignación</p>
+        <h2>24</h2>
+        <span class="danger">Sin Asignación</span>
+      </div>
+
+    </div>
+
+    <!-- Tabla -->
+    <div class="table">
+
+      <div class="row header">
+        <span>Departamento</span>
+        <span>Coordinador</span>
+        <span>Cursos</span>
+        <span>Estado</span>
+        <span>Progreso</span>
+      </div>
+
+      <div class="row">
+        <span>Humanidades</span>
+        <span>Olga Liliana</span>
+        <span>42 Cursos</span>
+        <span class="badge green">Completado</span>
+        <div class="progress"><div style="width: 80%"></div></div>
+      </div>
+
+      <div class="row">
+        <span>Matemáticas</span>
+        <span>Adriana</span>
+        <span>23 Cursos</span>
+        <span class="badge blue">En progreso</span>
+        <div class="progress"><div style="width: 50%"></div></div>
+      </div>
+
+      <div class="row">
+        <span>Lenguas</span>
+        <span>Pablo Emilio</span>
+        <span>10 Cursos</span>
+        <span class="badge orange">Atención</span>
+        <div class="progress"><div style="width: 65%"></div></div>
+      </div>
+
+      <div class="row">
+        <span>Ingeniería</span>
+        <span>Gustavo</span>
+        <span>20 Cursos</span>
+        <span class="badge gray">No iniciado</span>
+        <div class="progress"><div style="width: 20%"></div></div>
+      </div>
+
+    </div>
+
+  </main>
+
+</div>
+
+</body>
+</html>

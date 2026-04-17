@@ -1,0 +1,12 @@
+package co.edu.unbosque.horaclass.academy.dto;
+
+import lombok.*;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class DiaResponseDto {
+    private int idDia;
+    private String nombre;
+}
