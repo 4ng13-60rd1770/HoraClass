@@ -1,0 +1,32 @@
+# Logs de errores
+build_errors*.txt
+boot_error.log
+bootError2.log
+
+# Scripts de generación de código
+gen_all_services.py
+gen_phase1.py
+generate_controllers.py
+
+# Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# Gradle
+backend/.gradle/
+backend/build/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.eclipse
+
+# Frontend build
+frontend/node_modules/
+frontend/build/
+
+# OS
+.DS_Store
+Thumbs.db
