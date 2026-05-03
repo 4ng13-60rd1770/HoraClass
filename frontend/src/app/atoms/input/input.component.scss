@@ -1,0 +1,32 @@
+.input-wrapper {
+  position: relative;
+  width: 100%;
+
+  .input-field {
+    width: 100%;
+    padding: 14px 18px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-size: 0.9rem;
+    color: var(--color-text-primary);
+    background: var(--color-surface);
+    outline: none;
+    transition: border-color 0.2s;
+
+    &::placeholder { color: var(--color-text-muted); }
+    &:focus { border-color: var(--color-primary); }
+  }
+
+  .eye-btn {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    padding: 0;
+    display: flex;
+    &:hover { color: var(--color-text-secondary); }
+  }
+}

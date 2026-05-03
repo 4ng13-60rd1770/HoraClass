@@ -1,0 +1,120 @@
+<app-topbar searchPlaceholder="Buscar Materia"></app-topbar>
+
+<div class="inscripcion-page">
+  <div class="inscripcion-page__header">
+    <h1>Inscripción de Materias</h1>
+    <p class="text-muted">Bienvenido, <strong>{{ username }}</strong> · Año Academico: 2026-1</p>
+  </div>
+
+  <app-stats-row [stats]="stats"></app-stats-row>
+
+  @if (materias.length === 0) {
+    <div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.4">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      <p>El administrador aún no ha registrado materias disponibles.</p>
+    </div>
+  } @else {
+    <div class="inscripcion-section">
+      <div class="inscripcion-section__toolbar">
+        <h2>Materias Disponibles</h2>
+        <div class="filter-wrap">
+          <label>Carrera:</label>
+          <select [(ngModel)]="filtroCarrera">
+            <option value="">Todas</option>
+            @for (c of carreras; track c) { <option [value]="c">{{ c }}</option> }
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="insc-table">
+          <thead>
+            <tr>
+              <th>Carrera</th>
+              <th>Materia</th>
+              <th>Horario</th>
+              <th>Salón</th>
+              <th>Cupos</th>
+              <th>Estado</th>
+              <th>Acción</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of materiasFiltradas; track m.id) {
+              <tr [class.row--mio]="esMio(m)">
+                <td class="td-carrera">{{ m.carrera }}</td>
+                <td class="td-nombre">
+                  <p>{{ m.nombre }}</p>
+                  <span class="td-meta">{{ m.tipo }} · {{ m.modalidad }}</span>
+                </td>
+                <td>{{ m.horario || '—' }}</td>
+                <td>{{ m.salonNombre || '—' }}</td>
+                <td>{{ m.inscritos }}/{{ m.cupoMax }}</td>
+                <td>
+                  @if (esMio(m)) {
+                    <span class="badge badge--asignado">Asignado</span>
+                  } @else if (tieneDotro(m)) {
+                    <span class="badge badge--ocupado">Otro docente</span>
+                  } @else {
+                    <span class="badge badge--libre">Disponible</span>
+                  }
+                </td>
+                <td>
+                  @if (esMio(m)) {
+                    <button class="btn-liberar" (click)="abrirLiberar(m)">Liberar</button>
+                  } @else if (!tieneDotro(m)) {
+                    <button class="btn-inscribir" (click)="abrirConfirmar(m)">Inscribirme</button>
+                  } @else {
+                    <span class="td-meta">—</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal confirmar inscripción -->
+@if (modalConfirmar) {
+<div class="modal-overlay" (click)="cerrarModales()">
+  <div class="modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-confirm__icon modal-confirm__icon--green">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/><polyline points="9 12 12 15 16 9"/>
+      </svg>
+    </div>
+    <h3>¿Inscribirse como docente?</h3>
+    <p>Se asignará a <strong>{{ modalConfirmar.nombre }}</strong> ({{ modalConfirmar.carrera }}).<br/>
+       Horario: <strong>{{ modalConfirmar.horario || 'Por definir' }}</strong></p>
+    <div class="modal-confirm__actions">
+      <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+      <button class="btn-confirm btn-confirm--green" (click)="confirmarInscripcion()">Sí, inscribirme</button>
+    </div>
+  </div>
+</div>
+}
+
+<!-- Modal confirmar liberar -->
+@if (modalLiberar) {
+<div class="modal-overlay" (click)="cerrarModales()">
+  <div class="modal-confirm" (click)="$event.stopPropagation()">
+    <div class="modal-confirm__icon modal-confirm__icon--warn">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+        <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+      </svg>
+    </div>
+    <h3>¿Liberar asignación?</h3>
+    <p>Quedará sin docente asignado la materia <strong>{{ modalLiberar.nombre }}</strong>.</p>
+    <div class="modal-confirm__actions">
+      <button class="btn-cancel" (click)="cerrarModales()">Cancelar</button>
+      <button class="btn-confirm btn-confirm--red" (click)="confirmarLiberar()">Sí, liberar</button>
+    </div>
+  </div>
+</div>
+}

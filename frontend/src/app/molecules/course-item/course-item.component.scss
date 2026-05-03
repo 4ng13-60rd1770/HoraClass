@@ -1,0 +1,38 @@
+.course-item {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  cursor: default;
+
+  &--draggable { cursor: grab; &:active { cursor: grabbing; } }
+
+  &__code {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 4px;
+  }
+
+  &__credits {
+    float: right;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+
+  &__name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-top: 4px;
+    clear: both;
+  }
+
+  &__prof {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 2px;
+  }
+}

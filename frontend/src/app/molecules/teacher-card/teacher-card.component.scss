@@ -1,0 +1,121 @@
+.teacher-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+
+  &__header {
+    background: #8fa8c8;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #c8d8e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 2px solid rgba(255,255,255,0.4);
+    img { width: 100%; height: 100%; object-fit: cover; }
+  }
+
+  &__initials {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #4a6880;
+  }
+
+  &__name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  &__role {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.85);
+    margin-top: 2px;
+  }
+
+  &__body { padding: 16px; }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+
+  .tag {
+    background: #e8f0f8;
+    color: #4a6880;
+    border-radius: var(--radius-sm);
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+
+  &__load {
+    margin-bottom: 14px;
+  }
+
+  &__load-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 6px;
+  }
+
+  &__load-val { font-weight: 600; color: var(--color-text-primary); }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .btn-avail {
+    flex: 1;
+    padding: 8px;
+    background: #fde8e8;
+    color: var(--color-danger);
+    border: none;
+    border-radius: var(--radius-xl);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    &:hover { background: #fad5d5; }
+  }
+
+  .btn-edit, .btn-delete {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .btn-edit {
+    color: var(--color-text-muted);
+    &:hover { background: var(--color-bg); color: #5a8a5e; }
+  }
+
+  .btn-delete {
+    color: var(--color-text-muted);
+    &:hover { background: #fde8e8; color: #dc2626; }
+  }
+}

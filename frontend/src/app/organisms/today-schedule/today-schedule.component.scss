@@ -1,0 +1,80 @@
+.today-schedule {
+  background: var(--color-primary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    color: #fff;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+
+  &__calendar-link {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.85);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  &__list {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    margin-top: 0;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  &__entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  &__time {
+    text-align: center;
+    min-width: 52px;
+    padding-top: 10px;
+  }
+
+  &__hour {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  &__ampm {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+  }
+
+  &__block { flex: 1; }
+
+  &__empty {
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+    padding: 12px;
+  }
+
+  &__end {
+    border: 1.5px dashed var(--color-border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    padding: 14px;
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+  }
+}

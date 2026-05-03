@@ -1,0 +1,50 @@
+.classrooms-table-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
+}
+
+.classrooms-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  &__row {
+    border-bottom: 1px solid #f5f5f7;
+    &:last-child { border-bottom: none; }
+    &:hover { background: #fafafa; }
+  }
+
+  td { padding: 14px 20px; font-size: 0.875rem; }
+
+  &__salon-id { font-weight: 700; }
+  &__dept { font-size: 0.75rem; color: var(--color-text-muted); margin-top: 2px; }
+}
+
+.classrooms-table__actions { display: flex; gap: 4px; }
+
+.action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+
+  &--edit:hover   { background: #e8f0e8; color: #5a8a5e; }
+  &--toggle:hover { background: #e8f0ff; color: #5566cc; }
+  &--delete:hover { background: #fde8e8; color: #dc2626; }
+}

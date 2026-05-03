@@ -1,0 +1,175 @@
+.salones-page {
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  &__header {
+    h1 { font-size: 1.4rem; font-weight: 700; }
+    p { font-size: 0.82rem; margin-top: 4px; }
+  }
+
+  &__filters {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.search-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 8px 16px;
+  color: var(--color-text-muted);
+  flex: 1;
+  max-width: 320px;
+
+  input {
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.875rem;
+    width: 100%;
+    &::placeholder { color: var(--color-text-muted); }
+  }
+}
+
+.filter-select {
+  padding: 8px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  outline: none;
+  cursor: pointer;
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  background: var(--color-surface);
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  &:hover { background: var(--color-bg); }
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: var(--color-surface, #fff);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--color-border, #e5e7eb);
+    h2 { font-size: 1.1rem; font-weight: 700; margin: 0; }
+  }
+
+  &__close {
+    background: none; border: none; font-size: 1.1rem; cursor: pointer;
+    color: var(--color-text-muted, #9ca3af);
+    &:hover { color: #374151; }
+  }
+
+  &__body {
+    padding: 20px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  &__error { font-size: 0.82rem; color: #dc2626; margin: 0; }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border, #e5e7eb);
+  }
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  .form-group { flex: 1; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  label { font-size: 0.8rem; font-weight: 600; color: var(--color-text-secondary, #374151); }
+
+  input, select {
+    padding: 9px 12px;
+    border: 1.5px solid var(--color-border, #e5e7eb);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    outline: none;
+    background: var(--color-bg, #f9fafb);
+    &:focus { border-color: #e07b2a; }
+  }
+
+  &--check label {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+    cursor: pointer;
+    font-weight: 500;
+    input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; }
+  }
+}
+
+.btn-cancelar {
+  padding: 9px 20px;
+  border: 1.5px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.875rem;
+  cursor: pointer;
+  &:hover { background: var(--color-bg, #f9fafb); }
+}
+
+.btn-guardar {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  background: #e07b2a;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover:not(:disabled) { background: #c96d20; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}

@@ -1,0 +1,59 @@
+.stat-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+  flex: 1;
+
+  &__label {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  &__value-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+  }
+
+  &__value {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+
+    &.green { color: var(--color-primary); }
+    &.red { color: var(--color-danger); }
+    &.blue { color: var(--color-info); }
+    &.orange { color: var(--color-warning); }
+  }
+
+  &__extra {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+  }
+
+  &__subtitle {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    margin-top: 4px;
+  }
+
+  &__icon {
+    img {
+      width: 52px;
+      height: 52px;
+      object-fit: contain;
+    }
+  }
+
+  &__donut {
+    flex-shrink: 0;
+  }
+}

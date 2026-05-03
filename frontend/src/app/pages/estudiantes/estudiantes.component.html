@@ -1,0 +1,138 @@
+<app-topbar searchPlaceholder="Buscar Estudiante" actionLabel="Crear Estudiante" actionVariant="pink" (actionClick)="abrirModal()"></app-topbar>
+
+<div class="estudiantes-page">
+  <div class="estudiantes-page__header">
+    <h1>Lista de Matriculación</h1>
+    <p class="text-muted">Año Academico: 2026-1</p>
+  </div>
+
+  <div class="estudiantes-page__filters">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Nombre o ID del Estudiante" [(ngModel)]="searchQuery" />
+    </div>
+  </div>
+
+  <app-students-table
+    [rows]="students"
+    (editClick)="abrirEditar($event)"
+    (deleteClick)="eliminar($event)">
+  </app-students-table>
+</div>
+
+<!-- Modal Crear -->
+@if (modalAbierto) {
+  <div class="modal-backdrop" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>Crear Estudiante</h2>
+        <button class="modal__close" (click)="cerrarModal()">&#x2715;</button>
+      </div>
+      <div class="modal__body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Cédula *</label>
+            <input type="number" [(ngModel)]="form.idEstudiante" placeholder="Ej: 12345678" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Primer Nombre *</label>
+            <input type="text" [(ngModel)]="form.primerNombre" placeholder="María" (blur)="sugerirUsername()" />
+          </div>
+          <div class="form-group">
+            <label>Primer Apellido *</label>
+            <input type="text" [(ngModel)]="form.primerApellido" placeholder="López" (blur)="sugerirUsername()" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Username *</label>
+            <input type="text" [(ngModel)]="form.username" placeholder="mlopez" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carrera</label>
+            <select [(ngModel)]="form.carrera">
+              <option value="">Seleccionar carrera</option>
+              <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+              <option value="Derecho">Derecho</option>
+              <option value="Arquitectura">Arquitectura</option>
+              <option value="Administración de Empresas">Administración de Empresas</option>
+              <option value="Medicina">Medicina</option>
+              <option value="Psicología">Psicología</option>
+              <option value="Biología">Biología</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Semestre</label>
+            <input type="number" [(ngModel)]="form.semestre" min="1" max="10" />
+          </div>
+          <div class="form-group">
+            <label>Créditos</label>
+            <input type="number" [(ngModel)]="form.creditos" min="0" />
+          </div>
+        </div>
+        <p class="modal__hint">La contraseña inicial será la cédula del estudiante.</p>
+        @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
+      </div>
+      <div class="modal__footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" (click)="guardar()" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Crear Estudiante' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Editar -->
+@if (modalEditar) {
+  <div class="modal-backdrop" (click)="cerrarEditar()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>Editar Estudiante</h2>
+        <button class="modal__close" (click)="cerrarEditar()">&#x2715;</button>
+      </div>
+      <div class="modal__body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carrera</label>
+            <select [(ngModel)]="formEdit.carrera">
+              <option value="">Seleccionar carrera</option>
+              <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+              <option value="Derecho">Derecho</option>
+              <option value="Arquitectura">Arquitectura</option>
+              <option value="Administración de Empresas">Administración de Empresas</option>
+              <option value="Medicina">Medicina</option>
+              <option value="Psicología">Psicología</option>
+              <option value="Biología">Biología</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Semestre</label>
+            <input type="number" [(ngModel)]="formEdit.semestre" min="1" max="10" />
+          </div>
+          <div class="form-group">
+            <label>Créditos</label>
+            <input type="number" [(ngModel)]="formEdit.creditos" min="0" />
+          </div>
+        </div>
+        @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
+      </div>
+      <div class="modal__footer">
+        <button class="btn-cancelar" (click)="cerrarEditar()">Cancelar</button>
+        <button class="btn-guardar" (click)="guardarEdicion()" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

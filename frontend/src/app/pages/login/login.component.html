@@ -1,0 +1,37 @@
+<div class="login">
+  <div class="login__logo">
+    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+      <path d="M32 6C24 6 18 12 18 20C18 26 21 31 26 34C21 37 18 42 18 48C18 56 24 62 32 62C40 62 46 56 46 48C46 42 43 37 38 34C43 31 46 26 46 20C46 12 40 6 32 6Z" fill="#e07b2a" opacity="0.9"/>
+      <path d="M24 14C24 14 27 8 32 8C37 8 40 14 40 14" stroke="#c96a1a" stroke-width="2" fill="none"/>
+      <circle cx="32" cy="32" r="4" fill="white" opacity="0.7"/>
+    </svg>
+    <div class="login__brand">
+      <span class="login__brand-uni">UNIVERSIDAD</span>
+      <span class="login__brand-name">EL BOSQUE</span>
+    </div>
+  </div>
+
+  <div class="login__form">
+    <app-input
+      type="email"
+      placeholder="Usuario"
+      [(ngModel)]="username"
+    ></app-input>
+
+    <app-input
+      type="password"
+      placeholder="Contraseña"
+      [(ngModel)]="password"
+    ></app-input>
+
+    <p class="login__forgot">Olvidaste tu Contraseña</p>
+
+    @if (error) {
+      <p class="login__error">{{ error }}</p>
+    }
+
+    <button class="login__btn" (click)="login()" [disabled]="loading">
+      {{ loading ? 'Entrando...' : 'ENTRAR' }}
+    </button>
+  </div>
+</div>

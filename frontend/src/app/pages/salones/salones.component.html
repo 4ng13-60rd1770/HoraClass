@@ -1,0 +1,155 @@
+<app-topbar searchPlaceholder="Buscar Departamento" actionLabel="Nueva Aula" actionVariant="pink" (actionClick)="abrirModal()"></app-topbar>
+
+<div class="salones-page">
+  <div class="salones-page__header">
+    <h1>Salones</h1>
+    <p class="text-muted">Año Academico: 2026-1</p>
+  </div>
+
+  <app-stats-row [stats]="stats"></app-stats-row>
+
+  <div class="salones-page__filters">
+    <div class="search-wrap">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" placeholder="Buscar Departamento" [(ngModel)]="searchQuery" />
+    </div>
+  </div>
+
+  <app-classrooms-table
+    [rows]="classrooms"
+    (editClick)="abrirEditar($event)"
+    (toggleClick)="toggleDisponibilidad($event)"
+    (deleteClick)="eliminar($event)">
+  </app-classrooms-table>
+</div>
+
+<!-- Modal Crear -->
+@if (modalAbierto) {
+  <div class="modal-backdrop" (click)="cerrarModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>Registrar Aula</h2>
+        <button class="modal__close" (click)="cerrarModal()">&#x2715;</button>
+      </div>
+      <div class="modal__body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre del aula *</label>
+            <input type="text" [(ngModel)]="form.nombre" placeholder="Ej: 101, A-201" />
+          </div>
+          <div class="form-group">
+            <label>Edificio *</label>
+            <input type="text" [(ngModel)]="form.edificio" placeholder="Ej: Edificio A" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Capacidad (asientos) *</label>
+            <input type="number" [(ngModel)]="form.capacidad" placeholder="30" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select [(ngModel)]="form.tipo">
+              <option value="Aula">Aula</option>
+              <option value="Laboratorio">Laboratorio</option>
+              <option value="Auditorio">Auditorio</option>
+              <option value="Sala de cómputo">Sala de cómputo</option>
+              <option value="Taller">Taller</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carrera</label>
+            <select [(ngModel)]="form.departamento">
+              <option value="">General</option>
+              <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+              <option value="Derecho">Derecho</option>
+              <option value="Arquitectura">Arquitectura</option>
+              <option value="Administración de Empresas">Administración de Empresas</option>
+              <option value="Medicina">Medicina</option>
+              <option value="Psicología">Psicología</option>
+              <option value="Biología">Biología</option>
+            </select>
+          </div>
+        </div>
+        @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
+      </div>
+      <div class="modal__footer">
+        <button class="btn-cancelar" (click)="cerrarModal()">Cancelar</button>
+        <button class="btn-guardar" (click)="guardar()" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Registrar Aula' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal Editar -->
+@if (modalEditar) {
+  <div class="modal-backdrop" (click)="cerrarEditar()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal__header">
+        <h2>Editar Aula</h2>
+        <button class="modal__close" (click)="cerrarEditar()">&#x2715;</button>
+      </div>
+      <div class="modal__body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre del aula</label>
+            <input type="text" [(ngModel)]="formEdit.nombre" />
+          </div>
+          <div class="form-group">
+            <label>Edificio</label>
+            <input type="text" [(ngModel)]="formEdit.edificio" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Capacidad</label>
+            <input type="number" [(ngModel)]="formEdit.capacidad" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Tipo</label>
+            <select [(ngModel)]="formEdit.tipo">
+              <option value="Aula">Aula</option>
+              <option value="Laboratorio">Laboratorio</option>
+              <option value="Auditorio">Auditorio</option>
+              <option value="Sala de cómputo">Sala de cómputo</option>
+              <option value="Taller">Taller</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Departamento</label>
+            <select [(ngModel)]="formEdit.departamento">
+              <option value="">General</option>
+              <option value="Ingeniería de Sistemas">Ingeniería de Sistemas</option>
+              <option value="Derecho">Derecho</option>
+              <option value="Arquitectura">Arquitectura</option>
+              <option value="Administración de Empresas">Administración de Empresas</option>
+              <option value="Medicina">Medicina</option>
+              <option value="Psicología">Psicología</option>
+            </select>
+          </div>
+          <div class="form-group form-group--check">
+            <label>
+              <input type="checkbox" [(ngModel)]="formEdit.disponible" />
+              Disponible
+            </label>
+          </div>
+        </div>
+        @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
+      </div>
+      <div class="modal__footer">
+        <button class="btn-cancelar" (click)="cerrarEditar()">Cancelar</button>
+        <button class="btn-guardar" (click)="guardarEdicion()" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar Cambios' }}
+        </button>
+      </div>
+    </div>
+  </div>
+}

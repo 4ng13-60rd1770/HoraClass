@@ -1,0 +1,49 @@
+<app-topbar searchPlaceholder="Buscar Materia, Docente, ID"></app-topbar>
+
+<div class="reg-horario">
+  <div class="reg-horario__conflict" *ngIf="conflict">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+    </svg>
+    1 Conflicto Detectado: {{ conflict }}
+  </div>
+
+  <div class="reg-horario__body">
+    <app-courses-sidebar [courses]="courses"></app-courses-sidebar>
+
+    <div class="reg-horario__calendar">
+      <div class="cal-grid">
+        <div class="cal-times">
+          <div class="cal-header-empty"></div>
+          <div *ngFor="let h of hours" class="cal-time">{{ h }}</div>
+        </div>
+        <div *ngFor="let day of days; let di = index" class="cal-day">
+          <div class="cal-day-header">{{ day }}</div>
+          <div class="cal-day-body">
+            <div *ngFor="let h of hours; let hi = index"
+              class="cal-cell"
+              (dragover)="allowDrop($event)"
+              (drop)="onDrop($event, di, hi)">
+            </div>
+            <div *ngFor="let ev of getEventsForDay(di)"
+              class="cal-event"
+              [style.background]="ev.color"
+              [style.border-left]="'3px solid ' + ev.borderColor"
+              [style.color]="ev.textColor"
+              [style.top.px]="getTop(ev)"
+              [style.height.px]="getHeight(ev)">
+              <p class="cal-event__code">{{ ev.code }}</p>
+              <p class="cal-event__name">{{ ev.name }}</p>
+              <p class="cal-event__time">{{ ev.location }}</p>
+              <span class="cal-event__check" *ngIf="ev.color !== '#fee2e2'">✓</span>
+              <span class="cal-event__warn" *ngIf="ev.color === '#fee2e2'">⚠</span>
+            </div>
+          </div>
+        </div>
+        <div class="cal-drop-hint">
+          <div class="drop-box">ARRASTA AQUÍ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
