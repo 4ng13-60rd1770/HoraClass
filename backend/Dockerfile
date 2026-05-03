@@ -12,6 +12,10 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN groupadd --system spring && useradd --system --gid spring spring
 COPY --from=build --chown=spring:spring /build/target/horaclass-*.jar /app/app.jar
 USER spring:spring
