@@ -18,3 +18,7 @@ backend/target/
 .idea/
 *.iml
 .DS_Store
+
+.scannerwork/
+report-task.txt
+frontend/.eslintcache
