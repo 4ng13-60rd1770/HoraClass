@@ -7,7 +7,9 @@
     "start": "ng serve",
     "build": "ng build",
     "build:docker": "ng build --configuration docker",
-    "watch": "ng build --watch --configuration development"
+    "watch": "ng build --watch --configuration development",
+    "lint": "ng lint",
+    "lint:fix": "ng lint --fix"
   },
   "dependencies": {
     "@angular/common": "21.2.9",
@@ -24,6 +26,10 @@
     "@angular/build": "21.2.9",
     "@angular/cli": "21.2.9",
     "@angular/compiler-cli": "21.2.9",
-    "typescript": "~5.9.2"
+    "@eslint/js": "^9.15.0",
+    "angular-eslint": "21.3.1",
+    "eslint": "^9.15.0",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.15.0"
   }
 }
