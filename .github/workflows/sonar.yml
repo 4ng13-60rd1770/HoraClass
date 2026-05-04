@@ -1,10 +1,13 @@
-# Requiere secrets en el repo: SONAR_TOKEN, SONAR_HOST_URL (SonarCloud: https://sonarcloud.io).
-# SonarCloud: añade en sonar-project.properties: sonar.organization=TU_ORG
+# Secrets en GitHub (Settings → Secrets → Actions): SONAR_TOKEN, SONAR_HOST_URL
+# SONAR_HOST_URL en SonarCloud es siempre: https://sonarcloud.io
+# (no uses la URL del dashboard del proyecto)
 
 name: SonarQube
 
 on:
   workflow_dispatch:
+  push:
+    branches: [master]
 
 jobs:
   sonar:
