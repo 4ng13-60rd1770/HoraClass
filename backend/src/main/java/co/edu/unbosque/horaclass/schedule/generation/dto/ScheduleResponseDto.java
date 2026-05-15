@@ -18,4 +18,5 @@ public class ScheduleResponseDto {
     private int totalConflictos;
     private List<ScheduleEntryResponseDto> entries;
     private List<ScheduleConflictResponseDto> conflictos;
+    private List<String> alertas;
 }

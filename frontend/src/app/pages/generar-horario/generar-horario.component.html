@@ -15,6 +15,10 @@
         <label>Semestre</label>
         <input type="text" [(ngModel)]="semestre" placeholder="Ej: 2026-1" [disabled]="generando" />
       </div>
+      <div class="input-group">
+        <label>Variantes</label>
+        <input type="number" [(ngModel)]="variantes" min="1" [disabled]="generando" />
+      </div>
       <button class="btn btn-primary btn-generate" (click)="generarHorario()" [disabled]="generando">
         <span *ngIf="!generando">⚡ Generar Horario</span>
         <span *ngIf="generando" class="generating">
@@ -125,6 +129,14 @@
           </div>
         </ng-container>
       </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alertas-section" *ngIf="horario.alertas?.length">
+      <h3>⚠️ Alertas de conflictos</h3>
+      <ul class="alertas-list">
+        <li *ngFor="let alerta of horario.alertas">{{ alerta }}</li>
+      </ul>
     </div>
 
     <!-- Conflictos -->

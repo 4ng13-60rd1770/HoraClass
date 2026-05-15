@@ -43,9 +43,9 @@ export class ScheduleService {
 
   // ========== Horarios ==========
 
-  generarHorario(semestre: string): Observable<ScheduleResponse> {
+  generarHorario(semestre: string, variantes = 1): Observable<ScheduleResponse> {
     return this.http.post<ScheduleResponse>(
-      `${this.horarioUrl}/generar/${semestre}`,
+      `${this.horarioUrl}/generar/${semestre}?variantes=${variantes}`,
       {}
     );
   }

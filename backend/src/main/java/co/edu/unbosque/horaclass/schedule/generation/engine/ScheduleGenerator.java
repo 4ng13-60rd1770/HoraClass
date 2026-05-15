@@ -36,6 +36,51 @@ public class ScheduleGenerator {
                             List<Teacher> docentes,
                             List<TimeSlot> franjas,
                             List<Classroom> aulas) {
+        return generarVariantes(grupos, docentes, franjas, aulas, 1);
+    }
+
+    /**
+     * Genera una o varias variantes de horario y elige la mejor según el menor número de conflictos.
+     */
+    public Schedule generarVariantes(List<Group> grupos,
+                                     List<Teacher> docentes,
+                                     List<TimeSlot> franjas,
+                                     List<Classroom> aulas,
+                                     int variantes) {
+        if (variantes <= 1) {
+            return generarInterno(new ArrayList<>(grupos), new ArrayList<>(docentes), franjas, aulas);
+        }
+
+        Schedule mejorHorario = null;
+        int mejorConflictos = Integer.MAX_VALUE;
+
+        for (int intento = 0; intento < variantes; intento++) {
+            List<Group> gruposIntento = new ArrayList<>(grupos);
+            List<Teacher> docentesIntento = new ArrayList<>(docentes);
+
+            if (intento > 0) {
+                Collections.shuffle(gruposIntento, new Random(intento + 1));
+                Collections.shuffle(docentesIntento, new Random(intento + 7));
+            }
+
+            Schedule horarioIntento = generarInterno(gruposIntento, docentesIntento, franjas, aulas);
+            int conflictos = horarioIntento.getConflictos().size();
+            if (mejorHorario == null || conflictos < mejorConflictos) {
+                mejorHorario = horarioIntento;
+                mejorConflictos = conflictos;
+                if (mejorConflictos == 0) {
+                    break;
+                }
+            }
+        }
+
+        return mejorHorario;
+    }
+
+    private Schedule generarInterno(List<Group> grupos,
+                                    List<Teacher> docentes,
+                                    List<TimeSlot> franjas,
+                                    List<Classroom> aulas) {
 
         Schedule schedule = new Schedule();
         schedule.setFechaGeneracion(LocalDate.now());
@@ -56,11 +101,9 @@ public class ScheduleGenerator {
         }
 
         // Ordenar grupos por cupo máximo descendente (los más grandes primero, más difíciles de asignar)
-        List<Group> gruposOrdenados = new ArrayList<>(grupos);
-        gruposOrdenados.sort(Comparator.comparingInt(Group::getCupoMaximo));
-        Collections.reverse(gruposOrdenados);
+        grupos.sort(Comparator.comparingInt(Group::getCupoMaximo).reversed());
 
-        for (Group grupo : gruposOrdenados) {
+        for (Group grupo : grupos) {
             AssignmentResult resultado = intentarAsignar(
                     grupo, docentes, franjas, aulas,
                     docentePorFranja, aulaPorFranja, cargaActualDocente);
@@ -99,7 +142,49 @@ public class ScheduleGenerator {
             }
         }
 
+        detectarConflictosDeValidacion(schedule);
+
         return schedule;
+    }
+
+    private void detectarConflictosDeValidacion(Schedule schedule) {
+        Map<String, ScheduleEntry> docentePorFranja = new HashMap<>();
+        Map<String, ScheduleEntry> aulaPorFranja = new HashMap<>();
+
+        for (ScheduleEntry entry : schedule.getEntries()) {
+            if (entry.getFranja() == null || entry.getDocente() == null || entry.getAula() == null) {
+                continue;
+            }
+
+            String docenteKey = entry.getFranja().getIdFranja() + "-doc-" + entry.getDocente().getIdProfesor();
+            if (docentePorFranja.containsKey(docenteKey)) {
+                ScheduleConflict conflict = new ScheduleConflict();
+                conflict.setGrupo(entry.getGrupo());
+                conflict.setMotivo(ConflictReason.DOCENTE_DUPLICADO);
+                String nombreDocente = entry.getDocente().getUsuario() != null
+                        ? entry.getDocente().getUsuario().getPrimerNombre() + " " + entry.getDocente().getUsuario().getPrimerApellido()
+                        : String.valueOf(entry.getDocente().getIdProfesor());
+                conflict.setDescripcion("El docente " + nombreDocente + " está asignado en dos grupos a la misma franja.");
+                conflict.setEstado("PENDIENTE");
+                conflict.setFechaDeteccion(LocalDateTime.now());
+                schedule.agregarConflicto(conflict);
+            } else {
+                docentePorFranja.put(docenteKey, entry);
+            }
+
+            String aulaKey = entry.getFranja().getIdFranja() + "-aula-" + entry.getAula().getIdSalon();
+            if (aulaPorFranja.containsKey(aulaKey)) {
+                ScheduleConflict conflict = new ScheduleConflict();
+                conflict.setGrupo(entry.getGrupo());
+                conflict.setMotivo(ConflictReason.AULA_DUPLICADA);
+                conflict.setDescripcion("El aula " + entry.getAula().getNombre() + " está ocupada por más de un grupo en la misma franja.");
+                conflict.setEstado("PENDIENTE");
+                conflict.setFechaDeteccion(LocalDateTime.now());
+                schedule.agregarConflicto(conflict);
+            } else {
+                aulaPorFranja.put(aulaKey, entry);
+            }
+        }
     }
 
     /**

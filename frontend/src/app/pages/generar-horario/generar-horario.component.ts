@@ -17,6 +17,7 @@ import {
 })
 export class GenerarHorarioComponent implements OnInit {
   semestre = '';
+  variantes = 1;
   loading = false;
   generando = false;
   errorMsg = '';
@@ -59,7 +60,8 @@ export class GenerarHorarioComponent implements OnInit {
     this.errorMsg = '';
     this.successMsg = '';
 
-    this.scheduleService.generarHorario(this.semestre).subscribe({
+    const variantes = Math.max(1, this.variantes);
+    this.scheduleService.generarHorario(this.semestre, variantes).subscribe({
       next: (data) => {
         this.horario = data;
         this.generando = false;
@@ -148,6 +150,9 @@ export class GenerarHorarioComponent implements OnInit {
       SIN_FRANJA_DISPONIBLE: 'Sin franja disponible',
       CARGA_MAXIMA_ALCANZADA: 'Carga máxima alcanzada',
       SIN_AULA_CON_CAPACIDAD: 'Sin aula con capacidad suficiente',
+      DOCENTE_DUPLICADO: 'Docente asignado en más de una clase a la misma franja',
+      AULA_DUPLICADA: 'Aula asignada a más de un grupo en la misma franja',
+      CRUCE_HORARIO: 'Cruce de horario detectado'
     };
     return labels[motivo] || motivo;
   }

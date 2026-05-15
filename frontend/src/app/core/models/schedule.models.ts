@@ -29,6 +29,7 @@ export interface ScheduleResponse {
   totalConflictos: number;
   entries: ScheduleEntryResponse[];
   conflictos: ScheduleConflictResponse[];
+  alertas?: string[];
 }
 
 export interface ScheduleEntryResponse {

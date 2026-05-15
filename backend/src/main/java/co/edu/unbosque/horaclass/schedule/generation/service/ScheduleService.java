@@ -63,6 +63,10 @@ public class ScheduleService {
      * Genera un horario académico para el semestre dado.
      */
     public ScheduleResponseDto generarHorario(String semestre) {
+        return generarHorario(semestre, 1);
+    }
+
+    public ScheduleResponseDto generarHorario(String semestre, int variantes) {
         // Validar que no exista un horario previo
         if (scheduleRepository.existsBySemestre(semestre)) {
             throw new RuntimeException(
@@ -98,8 +102,8 @@ public class ScheduleService {
                     "No hay aulas disponibles registradas en el sistema.");
         }
 
-        // Ejecutar el algoritmo de generación
-        Schedule schedule = generator.generar(grupos, docentes, franjas, aulas);
+        // Ejecutar el algoritmo de generación y validar múltiples variantes si se solicita
+        Schedule schedule = generator.generarVariantes(grupos, docentes, franjas, aulas, variantes);
         schedule.setSemestre(semestre);
 
         // Persistir el horario
@@ -220,6 +224,9 @@ public class ScheduleService {
                 .collect(Collectors.toList());
         dto.setConflictos(conflictDtos);
         dto.setTotalConflictos(conflictDtos.size());
+        dto.setAlertas(conflictDtos.stream()
+                .map(ScheduleConflictResponseDto::getDescripcion)
+                .collect(Collectors.toList()));
 
         return dto;
     }

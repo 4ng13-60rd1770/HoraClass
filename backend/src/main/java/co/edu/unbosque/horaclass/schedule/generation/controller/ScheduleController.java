@@ -24,9 +24,11 @@ public class ScheduleController {
      * POST /api/horarios/generar/{semestre}
      */
     @PostMapping("/generar/{semestre}")
-    public ResponseEntity<ScheduleResponseDto> generar(@PathVariable String semestre) {
+    public ResponseEntity<ScheduleResponseDto> generar(
+            @PathVariable String semestre,
+            @RequestParam(value = "variantes", defaultValue = "1") int variantes) {
         try {
-            ScheduleResponseDto resultado = scheduleService.generarHorario(semestre);
+            ScheduleResponseDto resultado = scheduleService.generarHorario(semestre, variantes);
             return ResponseEntity.ok(resultado);
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(null);
