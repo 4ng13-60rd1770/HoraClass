@@ -201,10 +201,16 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
       codigo:      this.form.codigo,
       tipo:        this.form.tipo,
       modalidad:   this.form.modalidad,
+    }).subscribe({
+      next: () => {
+        this.modalAbrir  = false;
+        this.form        = this.formVacio();
+        this.formHorario = this.horarioVacio();
+      },
+      error: () => {
+        this.errorModal = 'Error al guardar la materia. Verifica tu conexión e inténtalo de nuevo.';
+      }
     });
-    this.modalAbrir  = false;
-    this.form        = this.formVacio();
-    this.formHorario = this.horarioVacio();
   }
 
   abrirEditar(m: MateriaShared): void {
@@ -238,14 +244,22 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
       salonId:     this.formEdit.salonId,  salonNombre: salon?.nombre,
       codigo:      this.formEdit.codigo,   tipo:        this.formEdit.tipo,
       modalidad:   this.formEdit.modalidad,
+    }).subscribe({
+      next: () => {
+        this.modalEditar = false;
+        this.idEditando  = null;
+      },
+      error: () => {
+        this.errorModal = 'Error al guardar los cambios. Inténtalo de nuevo.';
+      }
     });
-    this.modalEditar = false;
-    this.idEditando  = null;
   }
 
   eliminar(id: number): void {
     if (!confirm('¿Eliminar esta materia?')) return;
-    this.svc.remove(id);
+    this.svc.remove(id).subscribe({
+      error: () => alert('Error al eliminar la materia. Inténtalo de nuevo.')
+    });
   }
 
   // ── Form vacío ────────────────────────────────────────────────────────────

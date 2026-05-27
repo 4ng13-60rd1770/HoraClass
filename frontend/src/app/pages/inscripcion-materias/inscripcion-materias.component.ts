@@ -78,18 +78,24 @@ export class InscripcionMateriasComponent implements OnInit, OnDestroy {
 
   confirmarInscripcion() {
     if (!this.modalConfirmar) return;
-    this.svc.asignarDocente(this.modalConfirmar.id, this.username);
+    const id = this.modalConfirmar.id;
     this.modalConfirmar = null;
-    this.actualizarStats();
-    this.cdr.detectChanges();
+    // Persiste en BD vía PATCH /api/materias/{id}/inscribir-docente
+    this.svc.asignarDocente(id).subscribe({
+      next: () => this.cdr.detectChanges(),
+      error: () => alert('Error al asignarse la materia. Inténtalo de nuevo.')
+    });
   }
 
   confirmarLiberar() {
     if (!this.modalLiberar) return;
-    this.svc.liberarDocente(this.modalLiberar.id);
+    const id = this.modalLiberar.id;
     this.modalLiberar = null;
-    this.actualizarStats();
-    this.cdr.detectChanges();
+    // Persiste en BD vía PATCH /api/materias/{id}/desinscribir-docente
+    this.svc.liberarDocente(id).subscribe({
+      next: () => this.cdr.detectChanges(),
+      error: () => alert('Error al liberar la materia. Inténtalo de nuevo.')
+    });
   }
 
   private actualizarStats() {

@@ -11,4 +11,5 @@ public interface StudentService {
     List<StudentResponseDto> listarTodosLosEstudiantes();
     StudentResponseDto obtenerEstudiantePorId(Long id);
     void eliminarEstudiante(Long id);
+    StudentResponseDto obtenerEstudiantePorUsername(String username);
 }

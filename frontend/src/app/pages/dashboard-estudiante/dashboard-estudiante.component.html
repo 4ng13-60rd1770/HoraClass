@@ -2,8 +2,14 @@
 
 <div class="dash-est">
   <div class="dash-est__header">
-    <h1>Hola, Maria</h1>
-    <p class="text-muted">ID:2024-009</p>
+    <h1>Hola, <span class="accent">{{ nombreMostrar }}</span> 👋</h1>
+    <p class="text-muted">
+      @if (perfil) {
+        ID: {{ perfil.idEstudiante }} · {{ perfil.carrera }} · Estado: {{ perfil.estado }}
+      } @else {
+        Cargando información...
+      }
+    </p>
   </div>
 
   <app-stats-row [stats]="stats"></app-stats-row>

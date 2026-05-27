@@ -93,6 +93,14 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public StudentResponseDto obtenerEstudiantePorUsername(String username) {
+        Student student = studentRepository.findByUsuario_Username(username)
+                .orElseThrow(() -> new RuntimeException("Estudiante no encontrado con username: " + username));
+        return mapToDto(student);
+    }
+
+    @Override
     public void eliminarEstudiante(Long id) {
         if (!studentRepository.existsById(id)) {
             throw new RuntimeException("Estudiante no encontrado con ID: " + id);

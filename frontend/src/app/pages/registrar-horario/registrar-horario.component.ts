@@ -1,9 +1,19 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { TopbarComponent } from '../../organisms/topbar/topbar.component';
 import { CoursesSidebarComponent } from '../../organisms/courses-sidebar/courses-sidebar.component';
 import { CourseItem } from '../../molecules/course-item/course-item.component';
 import { CalendarEvent } from '../../organisms/schedule-calendar/schedule-calendar.component';
+import { StudentService } from '../../core/services/student.service';
+import { MateriasService, MateriaShared } from '../../core/services/materias.service';
+import { StudentResponse } from '../../core/models/student.models';
+
+// Paleta de colores para los cursos
+const COLORS = [
+  '#dcfce7', '#dbeafe', '#ede9fe', '#fef3c7',
+  '#fce7f3', '#cffafe', '#ffedd5', '#d1fae5',
+];
 
 @Component({
   selector: 'app-registrar-horario',
@@ -12,60 +22,111 @@ import { CalendarEvent } from '../../organisms/schedule-calendar/schedule-calend
   templateUrl: './registrar-horario.component.html',
   styleUrls: ['./registrar-horario.component.scss']
 })
-export class RegistrarHorarioComponent {
-  conflict = 'MAT202';
+export class RegistrarHorarioComponent implements OnInit, OnDestroy {
 
-  courses: CourseItem[] = [
-    { code: 'FS101', name: 'Física II', professor: 'Prof. Martin Lutero', credits: 3, color: '#dcfce7' },
-    { code: 'MAT202', name: 'Cálculo II', professor: 'Prof. Lizeth Bedoya', credits: 3, color: '#dbeafe' },
-    { code: 'ES105', name: 'Seminario de Investigación', professor: 'Dr. Elena Kostic', credits: 3, color: '#ede9fe' },
-    { code: 'CA205', name: 'Complejidad Algorítmica', professor: 'Prof. Wilson Rojas', credits: 3, color: '#fef3c7' },
-    { code: 'ARTL101', name: 'Arte de la Literatura', professor: 'Prof. Ellen Marks', credits: 3, color: '#fef9c3' },
-  ];
+  perfil: StudentResponse | null = null;
+  courses: CourseItem[] = [];
+  events: CalendarEvent[] = [];
+  conflict: string | null = null;
+  cargando = true;
 
-  days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
-  hours = ['08:00 AM','09:00 AM','10:00 AM','11:00 AM','12:00 PM','13:00 PM','14:00 PM','15:00 PM','16:00 PM','17:00 PM','18:00 PM','19:00 PM'];
+  days  = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  hours = ['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
 
-  events: CalendarEvent[] = [
-    { day: 0, startHour: 9, endHour: 10.5, code: 'FS101', name: 'Física II', location: '9:00 - 10:30 AM', color: '#dcfce7', borderColor: '#16a34a', textColor: '#14532d' },
-    { day: 2, startHour: 9, endHour: 10.5, code: 'FS101', name: 'Física II', location: '9:00 - 10:30 AM', color: '#dcfce7', borderColor: '#16a34a', textColor: '#14532d' },
-    { day: 1, startHour: 10, endHour: 12, code: 'MAT202', name: 'Cálculo II', location: '10:00 - 12:00 PM', color: '#fee2e2', borderColor: '#dc2626', textColor: '#7f1d1d' },
-  ];
+  private sub = new Subscription();
 
+  constructor(
+    private studentSvc: MateriasService,
+    private profileSvc: StudentService,
+    private cdr: ChangeDetectorRef,
+  ) {}
+
+  ngOnInit(): void {
+    // 1. Obtener perfil del estudiante para saber su carrera
+    this.profileSvc.getProfile().subscribe({
+      next: (p) => {
+        this.perfil = p;
+        this.cargando = false;
+        // 2. Suscribirse a materias y filtrar por carrera del estudiante
+        this.sub.add(
+          this.studentSvc.materias$.subscribe(list => {
+            this.courses = this.buildCourses(list, p.carrera);
+            this.cdr.detectChanges();
+          })
+        );
+      },
+      error: () => {
+        this.cargando = false;
+        // Sin perfil: mostrar todas las que tengan docente y cupos
+        this.sub.add(
+          this.studentSvc.materias$.subscribe(list => {
+            this.courses = this.buildCourses(list, null);
+            this.cdr.detectChanges();
+          })
+        );
+      }
+    });
+  }
+
+  ngOnDestroy(): void { this.sub.unsubscribe(); }
+
+  /** Filtra materias: misma carrera + docente asignado + cupos disponibles */
+  private buildCourses(list: MateriaShared[], carrera: string | null): CourseItem[] {
+    return list
+      .filter(m =>
+        (carrera === null || m.carrera === carrera) &&
+        m.docente?.trim() &&
+        m.cupoMax > 0 &&
+        m.inscritos < m.cupoMax
+      )
+      .map((m, i) => ({
+        code:      m.codigo || `MAT${m.id}`,
+        name:      m.nombre,
+        professor: m.docente,
+        credits:   3,
+        color:     COLORS[i % COLORS.length],
+      }));
+  }
+
+  // ── Calendario ────────────────────────────────────────────────────────────
   getEventsForDay(dayIndex: number): CalendarEvent[] {
     return this.events.filter(e => e.day === dayIndex);
   }
 
-  getTop(ev: CalendarEvent): number {
-    return (ev.startHour - 8) * 48;
-  }
-
-  getHeight(ev: CalendarEvent): number {
-    return (ev.endHour - ev.startHour) * 48 - 4;
-  }
+  getTop(ev: CalendarEvent): number    { return (ev.startHour - 8) * 48; }
+  getHeight(ev: CalendarEvent): number { return (ev.endHour - ev.startHour) * 48 - 4; }
 
   onDrop(event: DragEvent, dayIndex: number, hourIndex: number) {
     event.preventDefault();
     const data = event.dataTransfer?.getData('text/plain');
-    if (data) {
-      const course = JSON.parse(data);
-      const colorMap: Record<string, string> = {
-        FS101: '#dcfce7', MAT202: '#dbeafe', ES105: '#ede9fe',
-        CA205: '#fef3c7', ARTL101: '#fef9c3'
-      };
-      this.events.push({
-        day: dayIndex,
-        startHour: 8 + hourIndex,
-        endHour: 8 + hourIndex + 1.5,
-        code: course.code,
-        name: course.name,
-        location: '',
-        color: colorMap[course.code] || '#f0f0f0',
-        borderColor: '#888',
-        textColor: '#333'
-      });
+    if (!data) return;
+    const course: CourseItem = JSON.parse(data);
+
+    // Verificar si ya existe conflicto en esa hora
+    const existing = this.events.find(
+      e => e.day === dayIndex && !(8 + hourIndex + 1.5 <= e.startHour || 8 + hourIndex >= e.endHour)
+    );
+    if (existing) {
+      this.conflict = course.name;
+      return;
     }
+    this.conflict = null;
+    this.events.push({
+      day:         dayIndex,
+      startHour:   8 + hourIndex,
+      endHour:     8 + hourIndex + 1.5,
+      code:        course.code,
+      name:        course.name,
+      location:    `${String(8 + hourIndex).padStart(2,'0')}:00 – ${String(8 + hourIndex + 1).padStart(2,'0')}:30`,
+      color:       course.color || '#dcfce7',
+      borderColor: '#16a34a',
+      textColor:   '#14532d',
+    });
   }
 
   allowDrop(event: DragEvent) { event.preventDefault(); }
+
+  removeEvent(ev: CalendarEvent) {
+    this.events = this.events.filter(e => e !== ev);
+  }
 }

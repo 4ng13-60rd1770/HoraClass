@@ -14,6 +14,11 @@ export class StudentService {
     return this.http.get<StudentResponse[]>(this.url);
   }
 
+  /** Perfil del estudiante autenticado (ROLE_ESTUDIANTE) */
+  getProfile(): Observable<StudentResponse> {
+    return this.http.get<StudentResponse>(`${environment.apiUrl}/estudiante/perfil`);
+  }
+
   getById(id: number): Observable<StudentResponse> {
     return this.http.get<StudentResponse>(`${this.url}/${id}`);
   }

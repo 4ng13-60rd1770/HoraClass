@@ -69,6 +69,8 @@ public class SecurityConfig {
                                         .requestMatchers("/api/franjas/**").permitAll()
                                         .requestMatchers("/error").permitAll()
                                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                                        .requestMatchers("/api/materias/**").authenticated()
+                                        .requestMatchers("/api/estudiante/**").authenticated()
                                         .anyRequest().authenticated())
                 .httpBasic(httpSecurityHttpBasicConfigurer -> {
                 });

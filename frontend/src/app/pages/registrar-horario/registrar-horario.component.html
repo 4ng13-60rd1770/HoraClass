@@ -1,48 +1,91 @@
-<app-topbar searchPlaceholder="Buscar Materia, Docente, ID"></app-topbar>
+<app-topbar searchPlaceholder="Buscar Materia, Docente..."></app-topbar>
 
 <div class="reg-horario">
-  <div class="reg-horario__conflict" *ngIf="conflict">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-    </svg>
-    1 Conflicto Detectado: {{ conflict }}
+
+  <!-- ── CABECERA ─────────────────────────────────────────────────────────── -->
+  <div class="reg-horario__header">
+    <div>
+      <h1>Registrar Horario</h1>
+      @if (perfil) {
+        <p class="text-muted">{{ perfil.carrera }} · Semestre {{ perfil.semestre }}</p>
+      }
+    </div>
   </div>
 
-  <div class="reg-horario__body">
-    <app-courses-sidebar [courses]="courses"></app-courses-sidebar>
+  <!-- ── CONFLICTO ─────────────────────────────────────────────────────────── -->
+  @if (conflict) {
+    <div class="reg-horario__conflict">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+      Conflicto detectado: <strong>{{ conflict }}</strong> ya ocupa ese horario.
+    </div>
+  }
 
+  <!-- ── CUERPO ─────────────────────────────────────────────────────────── -->
+  <div class="reg-horario__body">
+
+    <!-- Sidebar con materias disponibles -->
+    @if (cargando) {
+      <div class="reg-horario__loading">Cargando materias disponibles...</div>
+    } @else if (courses.length === 0) {
+      <div class="reg-horario__empty-sidebar">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.4">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <p>No hay materias disponibles<br/>para tu carrera con docente asignado.</p>
+      </div>
+    } @else {
+      <app-courses-sidebar [courses]="courses"></app-courses-sidebar>
+    }
+
+    <!-- Calendario de arrastrar y soltar -->
     <div class="reg-horario__calendar">
       <div class="cal-grid">
+
+        <!-- Columna de horas -->
         <div class="cal-times">
           <div class="cal-header-empty"></div>
-          <div *ngFor="let h of hours" class="cal-time">{{ h }}</div>
+          @for (h of hours; track h) {
+            <div class="cal-time">{{ h }}</div>
+          }
         </div>
-        <div *ngFor="let day of days; let di = index" class="cal-day">
-          <div class="cal-day-header">{{ day }}</div>
-          <div class="cal-day-body">
-            <div *ngFor="let h of hours; let hi = index"
-              class="cal-cell"
-              (dragover)="allowDrop($event)"
-              (drop)="onDrop($event, di, hi)">
-            </div>
-            <div *ngFor="let ev of getEventsForDay(di)"
-              class="cal-event"
-              [style.background]="ev.color"
-              [style.border-left]="'3px solid ' + ev.borderColor"
-              [style.color]="ev.textColor"
-              [style.top.px]="getTop(ev)"
-              [style.height.px]="getHeight(ev)">
-              <p class="cal-event__code">{{ ev.code }}</p>
-              <p class="cal-event__name">{{ ev.name }}</p>
-              <p class="cal-event__time">{{ ev.location }}</p>
-              <span class="cal-event__check" *ngIf="ev.color !== '#fee2e2'">✓</span>
-              <span class="cal-event__warn" *ngIf="ev.color === '#fee2e2'">⚠</span>
+
+        <!-- Columnas de días -->
+        @for (day of days; track day; let di = $index) {
+          <div class="cal-day">
+            <div class="cal-day-header">{{ day }}</div>
+            <div class="cal-day-body">
+
+              <!-- Celdas vacías (receptoras de drop) -->
+              @for (h of hours; track h; let hi = $index) {
+                <div class="cal-cell"
+                     (dragover)="allowDrop($event)"
+                     (drop)="onDrop($event, di, hi)">
+                </div>
+              }
+
+              <!-- Eventos colocados -->
+              @for (ev of getEventsForDay(di); track ev.code + ev.startHour) {
+                <div class="cal-event"
+                     [style.background]="ev.color"
+                     [style.border-left]="'3px solid ' + ev.borderColor"
+                     [style.color]="ev.textColor"
+                     [style.top.px]="getTop(ev)"
+                     [style.height.px]="getHeight(ev)">
+                  <p class="cal-event__code">{{ ev.code }}</p>
+                  <p class="cal-event__name">{{ ev.name }}</p>
+                  <p class="cal-event__time">{{ ev.location }}</p>
+                  <button class="cal-event__remove" (click)="removeEvent(ev)" title="Quitar">✕</button>
+                </div>
+              }
+
             </div>
           </div>
-        </div>
-        <div class="cal-drop-hint">
-          <div class="drop-box">ARRASTA AQUÍ</div>
-        </div>
+        }
+
       </div>
     </div>
   </div>
