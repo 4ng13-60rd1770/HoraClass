@@ -1,131 +1,238 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { TopbarComponent } from '../../organisms/topbar/topbar.component';
+import { MateriasService, MateriaShared } from '../../core/services/materias.service';
 
-interface ProfesorBloque {
-  profesor: string;
-  iniciales: string;
-  color: string;
+// ── Tipos ──────────────────────────────────────────────────────────────────
+interface Bloque {
+  materia:    string;
+  docente:    string;
+  iniciales:  string;
+  salon:      string;
+  carrera:    string;
+  dia:        number;   // 0=Lun … 4=Vie
+  horaInicio: number;   // p.ej. 8  ó  10.5
+  horaFin:    number;
+  color:      string;
   colorLight: string;
-  dia: number;       // 0=Lun ... 4=Vie
-  horaInicio: number; // ej 9 = 9:00
-  horaFin: number;
-  materia: string;
-  salon: string;
+  sinDocente: boolean;
 }
 
-interface Profesor {
-  nombre: string;
-  iniciales: string;
-  color: string;
-  colorLight: string;
-  departamento: string;
+interface DocenteInfo {
+  nombre:        string;
+  iniciales:     string;
+  color:         string;
+  colorLight:    string;
+  carrera:       string;
   horasAsignadas: number;
-  horasMax: number;
+  horasMax:      number;
 }
+
+// ── Constantes ─────────────────────────────────────────────────────────────
+const PALETA = [
+  { color: '#7c3aed', light: '#ede9fe' },
+  { color: '#b45309', light: '#fef3c7' },
+  { color: '#0369a1', light: '#e0f2fe' },
+  { color: '#be185d', light: '#fce7f3' },
+  { color: '#065f46', light: '#d1fae5' },
+  { color: '#9a3412', light: '#ffedd5' },
+  { color: '#16a34a', light: '#dcfce7' },
+  { color: '#2563eb', light: '#dbeafe' },
+];
+
+const DIAS_MAP: Record<string, number> = {
+  lunes: 0, lun: 0,
+  martes: 1, mar: 1,
+  miercoles: 2, mie: 2,
+  jueves: 3, jue: 3,
+  viernes: 4, vie: 4,
+};
 
 @Component({
   selector: 'app-calendarios-secretaria',
   standalone: true,
   imports: [CommonModule, FormsModule, TopbarComponent],
   templateUrl: './calendarios-secretaria.component.html',
-  styleUrls: ['./calendarios-secretaria.component.scss']
+  styleUrls: ['./calendarios-secretaria.component.scss'],
 })
-export class CalendariosSecretariaComponent {
+export class CalendariosSecretariaComponent implements OnInit, OnDestroy {
+
+  // ── Estado de vista ───────────────────────────────────────────────────────
   vistaActiva: 'semana' | 'dia' = 'semana';
-  diaSeleccionado = 0;
-  filtroDepto = 'Todos';
-  departamentos = ['Todos', 'Matemáticas', 'Ciencias', 'Humanidades', 'Idiomas', 'Artes'];
+  diaSeleccionado = new Date().getDay() === 0 || new Date().getDay() === 6
+    ? 0 : new Date().getDay() - 1;
 
-  horas = [8,9,10,11,12,13,14,15,16,17,18];
-  dias = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  readonly dias  = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes'];
+  readonly horas = [7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
 
-  profesores: Profesor[] = [
-    { nombre: 'Dra. Elena Ramos',   iniciales: 'ER', color: '#7c3aed', colorLight: '#ede9fe', departamento: 'Ciencias',     horasAsignadas: 18, horasMax: 24 },
-    { nombre: 'Lic. Marco Polo',    iniciales: 'MP', color: '#b45309', colorLight: '#fef3c7', departamento: 'Humanidades',  horasAsignadas: 22, horasMax: 24 },
-    { nombre: 'Mtra. Sofía Vega',   iniciales: 'SV', color: '#0369a1', colorLight: '#e0f2fe', departamento: 'Matemáticas',  horasAsignadas: 12, horasMax: 24 },
-    { nombre: 'Mtra. Clara Luz',    iniciales: 'CL', color: '#be185d', colorLight: '#fce7f3', departamento: 'Artes',        horasAsignadas: 16, horasMax: 24 },
-    { nombre: 'Dr. Roberto Méndez', iniciales: 'RM', color: '#065f46', colorLight: '#d1fae5', departamento: 'Idiomas',      horasAsignadas: 20, horasMax: 24 },
-    { nombre: 'Prof. Wilson Rojas',  iniciales: 'WR', color: '#9a3412', colorLight: '#ffedd5', departamento: 'Ciencias',    horasAsignadas: 14, horasMax: 24 },
-  ];
+  readonly diaHoy = (() => {
+    const d = new Date().getDay();
+    return (d === 0 || d === 6) ? -1 : d - 1;
+  })();
 
-  bloques: ProfesorBloque[] = [
-    { profesor: 'Dra. Elena Ramos',   iniciales: 'ER', color: '#7c3aed', colorLight: '#ede9fe', dia: 0, horaInicio: 8,  horaFin: 10, materia: 'Física II',            salon: 'Lab GF-101' },
-    { profesor: 'Dra. Elena Ramos',   iniciales: 'ER', color: '#7c3aed', colorLight: '#ede9fe', dia: 2, horaInicio: 8,  horaFin: 10, materia: 'Física II',            salon: 'Lab GF-101' },
-    { profesor: 'Dra. Elena Ramos',   iniciales: 'ER', color: '#7c3aed', colorLight: '#ede9fe', dia: 4, horaInicio: 9,  horaFin: 11, materia: 'Seminario Inv.',       salon: 'M-103' },
+  // ── Filtro por carrera ────────────────────────────────────────────────────
+  filtroCarrera = 'Todas';
+  carreras: string[] = ['Todas'];
 
-    { profesor: 'Lic. Marco Polo',    iniciales: 'MP', color: '#b45309', colorLight: '#fef3c7', dia: 1, horaInicio: 10, horaFin: 12, materia: 'Historia Universal',   salon: 'I-201' },
-    { profesor: 'Lic. Marco Polo',    iniciales: 'MP', color: '#b45309', colorLight: '#fef3c7', dia: 3, horaInicio: 10, horaFin: 12, materia: 'Historia Universal',   salon: 'I-201' },
-    { profesor: 'Lic. Marco Polo',    iniciales: 'MP', color: '#b45309', colorLight: '#fef3c7', dia: 0, horaInicio: 14, horaFin: 16, materia: 'Ética',                salon: 'B-104' },
+  // ── Datos procesados ──────────────────────────────────────────────────────
+  allBloques:  Bloque[]      = [];
+  allDocentes: DocenteInfo[] = [];
 
-    { profesor: 'Mtra. Sofía Vega',   iniciales: 'SV', color: '#0369a1', colorLight: '#e0f2fe', dia: 0, horaInicio: 9,  horaFin: 11, materia: 'Álgebra Lineal',      salon: 'F-404' },
-    { profesor: 'Mtra. Sofía Vega',   iniciales: 'SV', color: '#0369a1', colorLight: '#e0f2fe', dia: 2, horaInicio: 9,  horaFin: 11, materia: 'Álgebra Lineal',      salon: 'F-404' },
-    { profesor: 'Mtra. Sofía Vega',   iniciales: 'SV', color: '#0369a1', colorLight: '#e0f2fe', dia: 4, horaInicio: 14, horaFin: 16, materia: 'Cálculo II',          salon: 'F-301' },
+  private sub = new Subscription();
 
-    { profesor: 'Mtra. Clara Luz',    iniciales: 'CL', color: '#be185d', colorLight: '#fce7f3', dia: 1, horaInicio: 8,  horaFin: 10, materia: 'Arte Pintura',         salon: 'A-101' },
-    { profesor: 'Mtra. Clara Luz',    iniciales: 'CL', color: '#be185d', colorLight: '#fce7f3', dia: 3, horaInicio: 8,  horaFin: 10, materia: 'Arte Pintura',         salon: 'A-101' },
-    { profesor: 'Mtra. Clara Luz',    iniciales: 'CL', color: '#be185d', colorLight: '#fce7f3', dia: 2, horaInicio: 15, horaFin: 17, materia: 'Arte Literatura',      salon: 'I-303' },
+  constructor(private svc: MateriasService, private cdr: ChangeDetectorRef) {}
 
-    { profesor: 'Dr. Roberto Méndez', iniciales: 'RM', color: '#065f46', colorLight: '#d1fae5', dia: 0, horaInicio: 11, horaFin: 13, materia: 'Alemán Avanzado',     salon: 'L-202' },
-    { profesor: 'Dr. Roberto Méndez', iniciales: 'RM', color: '#065f46', colorLight: '#d1fae5', dia: 2, horaInicio: 11, horaFin: 13, materia: 'Alemán Avanzado',     salon: 'L-202' },
-    { profesor: 'Dr. Roberto Méndez', iniciales: 'RM', color: '#065f46', colorLight: '#d1fae5', dia: 4, horaInicio: 11, horaFin: 13, materia: 'Francés I',           salon: 'L-101' },
-
-    { profesor: 'Prof. Wilson Rojas',  iniciales: 'WR', color: '#9a3412', colorLight: '#ffedd5', dia: 1, horaInicio: 14, horaFin: 16, materia: 'Prog. Avanzada',      salon: 'Sist-301' },
-    { profesor: 'Prof. Wilson Rojas',  iniciales: 'WR', color: '#9a3412', colorLight: '#ffedd5', dia: 3, horaInicio: 14, horaFin: 16, materia: 'Prog. Avanzada',      salon: 'Sist-301' },
-    { profesor: 'Prof. Wilson Rojas',  iniciales: 'WR', color: '#9a3412', colorLight: '#ffedd5', dia: 0, horaInicio: 16, horaFin: 18, materia: 'Complejidad Alg.',    salon: 'Sist-201' },
-  ];
-
-  get profesoresFiltrados(): Profesor[] {
-    if (this.filtroDepto === 'Todos') return this.profesores;
-    return this.profesores.filter(p => p.departamento === this.filtroDepto);
-  }
-
-  bloquesEnCelda(dia: number, hora: number): ProfesorBloque[] {
-    const profs = this.profesoresFiltrados.map(p => p.nombre);
-    return this.bloques.filter(b =>
-      b.dia === dia &&
-      hora >= b.horaInicio &&
-      hora < b.horaFin &&
-      profs.includes(b.profesor)
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    this.sub.add(
+      this.svc.materias$.subscribe(list => {
+        this.procesarMaterias(list);
+        this.cdr.detectChanges();
+      }),
     );
   }
 
-  esPrimerHora(bloque: ProfesorBloque, hora: number): boolean {
-    return bloque.horaInicio === hora;
-  }
+  ngOnDestroy(): void { this.sub.unsubscribe(); }
 
-  duracion(bloque: ProfesorBloque): number {
-    return bloque.horaFin - bloque.horaInicio;
-  }
-
-  estaLibre(profesor: Profesor, dia: number, hora: number): boolean {
-    return !this.bloques.some(b =>
-      b.profesor === profesor.nombre &&
-      b.dia === dia &&
-      hora >= b.horaInicio &&
-      hora < b.horaFin
-    );
-  }
-
-  disponibilidadHoy(dia: number): number {
-    const profs = this.profesoresFiltrados;
-    let libres = 0;
-    profs.forEach(p => {
-      const ocupado = this.horas.some(h => !this.estaLibre(p, dia, h));
-      if (!ocupado) libres++;
+  // ── Procesado de materias → bloques + docentes ────────────────────────────
+  private procesarMaterias(list: MateriaShared[]): void {
+    // Asignar color fijo por docente
+    const colorMap = new Map<string, { color: string; light: string }>();
+    let ci = 0;
+    list.forEach(m => {
+      if (m.docente && !colorMap.has(m.docente)) {
+        colorMap.set(m.docente, PALETA[ci % PALETA.length]);
+        ci++;
+      }
     });
-    return Math.round((libres / profs.length) * 100) || 0;
+
+    // Construir bloques (solo materias con horario)
+    this.allBloques = [];
+    list.forEach(m => {
+      if (!m.horario?.trim()) return;
+      const colorEntry = m.docente
+        ? colorMap.get(m.docente)!
+        : { color: '#9ca3af', light: '#f3f4f6' };
+
+      this.parsearHorario(m.horario).forEach(slot => {
+        this.allBloques.push({
+          materia:    m.nombre,
+          docente:    m.docente || 'Sin docente',
+          iniciales:  m.docente ? this.getIniciales(m.docente) : '?',
+          salon:      m.salonNombre ?? '—',
+          carrera:    m.carrera,
+          dia:        slot.dia,
+          horaInicio: slot.horaInicio,
+          horaFin:    slot.horaFin,
+          color:      colorEntry.color,
+          colorLight: colorEntry.light,
+          sinDocente: !m.docente,
+        });
+      });
+    });
+
+    // Construir lista de docentes asignados
+    const docentesMap = new Map<string, { materias: MateriaShared[]; color: typeof PALETA[0] }>();
+    list.forEach(m => {
+      if (!m.docente) return;
+      if (!docentesMap.has(m.docente)) {
+        docentesMap.set(m.docente, { materias: [], color: colorMap.get(m.docente)! });
+      }
+      docentesMap.get(m.docente)!.materias.push(m);
+    });
+
+    this.allDocentes = [];
+    docentesMap.forEach((val, nombre) => {
+      let horas = 0;
+      val.materias.forEach(m => {
+        this.parsearHorario(m.horario ?? '').forEach(s => horas += s.horaFin - s.horaInicio);
+      });
+      this.allDocentes.push({
+        nombre,
+        iniciales:      this.getIniciales(nombre),
+        color:          val.color.color,
+        colorLight:     val.color.light,
+        carrera:        val.materias[0]?.carrera ?? '',
+        horasAsignadas: Math.round(horas),
+        horasMax:       40,
+      });
+    });
+
+    // Actualizar carreras disponibles para el filtro
+    const cars = [...new Set(list.map(m => m.carrera).filter(Boolean))];
+    this.carreras = ['Todas', ...cars];
+    if (!this.carreras.includes(this.filtroCarrera)) this.filtroCarrera = 'Todas';
+  }
+
+  // ── Getters filtrados ──────────────────────────────────────────────────────
+  get bloquesFiltrados(): Bloque[] {
+    if (this.filtroCarrera === 'Todas') return this.allBloques;
+    return this.allBloques.filter(b => b.carrera === this.filtroCarrera);
+  }
+
+  get docentesFiltrados(): DocenteInfo[] {
+    if (this.filtroCarrera === 'Todas') return this.allDocentes;
+    return this.allDocentes.filter(d => d.carrera === this.filtroCarrera);
+  }
+
+  // ── Helpers del calendario ─────────────────────────────────────────────────
+  bloquesEnCelda(dia: number, hora: number): Bloque[] {
+    return this.bloquesFiltrados.filter(
+      b => b.dia === dia && hora >= b.horaInicio && hora < b.horaFin,
+    );
+  }
+
+  esPrimerHora(b: Bloque, hora: number): boolean {
+    return Math.floor(b.horaInicio) === hora;
+  }
+
+  duracion(b: Bloque): number { return b.horaFin - b.horaInicio; }
+
+  /** % de disponibilidad de ese día (docentes sin bloques ese día) */
+  disponibilidadDia(dia: number): number {
+    const docs = this.docentesFiltrados;
+    if (docs.length === 0) return 100;
+    const libres = docs.filter(d =>
+      !this.bloquesFiltrados.some(b => b.docente === d.nombre && b.dia === dia),
+    ).length;
+    return Math.round((libres / docs.length) * 100);
+  }
+
+  estaLibre(docente: DocenteInfo, dia: number): boolean {
+    return !this.bloquesFiltrados.some(b => b.docente === docente.nombre && b.dia === dia);
   }
 
   formatHora(h: number): string {
-    return h <= 12 ? `${h}:00 AM` : `${h - 12}:00 PM`;
+    return `${Math.floor(h).toString().padStart(2, '0')}:00`;
   }
 
-  get totalDisponibles(): number {
-    return this.profesoresFiltrados.filter(p =>
-      !this.bloques.some(b => b.profesor === p.nombre && b.dia === this.diaSeleccionado &&
-        this.horas.some(h => h >= b.horaInicio && h < b.horaFin))
-    ).length;
+  get totalClasesHoy(): number {
+    return this.bloquesFiltrados.filter(b => b.dia === this.diaSeleccionado).length;
+  }
+
+  get hayDatos(): boolean { return this.allBloques.length > 0; }
+
+  // ── Utilidades ─────────────────────────────────────────────────────────────
+  private getIniciales(username: string): string {
+    const parts = username.split(/[.\-_ ]/);
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return username.slice(0, 2).toUpperCase();
+  }
+
+  private parsearHorario(horario: string): { dia: number; horaInicio: number; horaFin: number }[] {
+    if (!horario?.trim()) return [];
+    const h = horario.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const dias: number[] = [];
+    for (const [key, val] of Object.entries(DIAS_MAP)) {
+      if (h.includes(key) && !dias.includes(val)) dias.push(val);
+    }
+    const m = h.match(/(\d{1,2})[:\.]?(\d{0,2})\s*[-–]\s*(\d{1,2})[:\.]?(\d{0,2})/);
+    if (!m || dias.length === 0) return [];
+    const horaInicio = parseInt(m[1]) + (m[2] ? parseInt(m[2] || '0') / 60 : 0);
+    const horaFin    = parseInt(m[3]) + (m[4] ? parseInt(m[4] || '0') / 60 : 0);
+    if (horaFin <= horaInicio) return [];
+    return dias.map(dia => ({ dia, horaInicio, horaFin }));
   }
 }

@@ -12,6 +12,7 @@ import { DashboardEstudianteComponent } from './pages/dashboard-estudiante/dashb
 import { HorarioComponent } from './pages/horario/horario.component';
 import { RegistrarHorarioComponent } from './pages/registrar-horario/registrar-horario.component';
 import { InscripcionMateriasComponent } from './pages/inscripcion-materias/inscripcion-materias.component';
+import { DashboardDocenteComponent } from './pages/dashboard-docente/dashboard-docente.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -49,8 +50,8 @@ export const routes: Routes = [
     component: MainLayoutComponent,
     canActivate: [authGuard, roleGuard('ROLE_DOCENTE')],
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'inscripcion' },
-      { path: 'dashboard', pathMatch: 'full', redirectTo: 'inscripcion' },
+      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
+      { path: 'dashboard', component: DashboardDocenteComponent },
       { path: 'inscripcion', component: InscripcionMateriasComponent },
     ],
   },

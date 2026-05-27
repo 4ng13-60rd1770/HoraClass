@@ -1,0 +1,191 @@
+<app-topbar searchPlaceholder="Buscar materia..."></app-topbar>
+
+<div class="dash-doc">
+
+  <!-- ── HEADER ──────────────────────────────────────────────────────── -->
+  <div class="dash-doc__header">
+    <div>
+      <h1>¡Bienvenido, <span class="accent">{{ username }}</span>! 👋</h1>
+      <p class="text-muted">{{ hoyNombre }}, {{ fechaHoy }} · Año Académico 2026-1</p>
+    </div>
+  </div>
+
+  <!-- ── STATS ───────────────────────────────────────────────────────── -->
+  <app-stats-row [stats]="stats"></app-stats-row>
+
+  <!-- ── CUERPO PRINCIPAL ────────────────────────────────────────────── -->
+  <div class="dash-doc__body">
+
+    <!-- ── CALENDARIO SEMANAL ──────────────────────────────────────── -->
+    <section class="cal-card">
+      <div class="cal-card__header">
+        <h2>Mi Horario Semanal</h2>
+        @if (leyenda.length > 0) {
+          <div class="leyenda">
+            @for (item of leyenda; track item.nombre) {
+              <span class="leyenda__dot" [style.background]="item.color"></span>
+              <span class="leyenda__label">{{ item.nombre }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (misMaterias.length === 0) {
+        <!-- Estado vacío -->
+        <div class="empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.4">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <p>No tienes materias asignadas aún.<br/>
+             Ve a <strong>Inscripción</strong> para registrarte en una materia.</p>
+        </div>
+      } @else {
+        <!-- Grid del calendario -->
+        <div class="cal-wrap">
+
+          <!-- Columna de horas -->
+          <div class="cal-times">
+            <div class="cal-times__corner"></div>
+            @for (h of horas; track h) {
+              <div class="cal-time">{{ formatHora(h) }}</div>
+            }
+          </div>
+
+          <!-- Columnas de días -->
+          @for (dia of dias; track dia; let di = $index) {
+            <div class="cal-col" [class.cal-col--hoy]="di === diaHoy">
+
+              <!-- Header del día -->
+              <div class="cal-col__header" [class.cal-col__header--hoy]="di === diaHoy">
+                <span class="cal-col__dia">{{ dia }}</span>
+                @if (di === diaHoy) {
+                  <span class="cal-col__tag">Hoy</span>
+                }
+              </div>
+
+              <!-- Cuerpo con la cuadrícula y bloques -->
+              <div class="cal-col__body" [style.height]="alturaGrid">
+                <!-- Líneas separadoras por hora -->
+                @for (h of horas; track h) {
+                  <div class="cal-row"></div>
+                }
+
+                <!-- Bloques de materias -->
+                @for (b of bloquesEnDia(di); track b.materia.id) {
+                  <div class="cal-bloque"
+                       [style.top.px]="getTop(b)"
+                       [style.height.px]="getHeight(b)"
+                       [style.background]="b.colorLight"
+                       [style.border-left-color]="b.color">
+                    <p class="cal-bloque__nombre" [style.color]="b.color">{{ b.materia.nombre }}</p>
+                    <p class="cal-bloque__hora">{{ formatRango(b) }}</p>
+                    @if (b.materia.salonNombre) {
+                      <p class="cal-bloque__salon">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        {{ b.materia.salonNombre }}
+                      </p>
+                    }
+                  </div>
+                }
+
+                <!-- Indicador "libre" si no hay bloques -->
+                @if (bloquesEnDia(di).length === 0) {
+                  <div class="cal-libre">Sin clases</div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </section>
+
+    <!-- ── TABLA DE HOY ─────────────────────────────────────────────── -->
+    <section class="today-card">
+      <div class="today-card__header">
+        <div>
+          <h2>Clases de Hoy</h2>
+          <p class="text-muted">{{ hoyNombre }}, {{ fechaHoy }}</p>
+        </div>
+        <div class="today-card__count">
+          <span>{{ clasesHoy().length }}</span>
+          <p>clase{{ clasesHoy().length !== 1 ? 's' : '' }}</p>
+        </div>
+      </div>
+
+      @if (diaHoy === -1) {
+        <div class="empty-state empty-state--small">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.4">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <p>¡Hoy es fin de semana! Disfruta tu descanso.</p>
+        </div>
+      } @else if (clasesHoy().length === 0) {
+        <div class="empty-state empty-state--small">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.4">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+            <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          <p>No tienes clases programadas para hoy.</p>
+        </div>
+      } @else {
+        <div class="today-table-wrap">
+          <table class="today-table">
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Materia</th>
+                <th>Salón</th>
+                <th>Carrera</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (b of clasesHoy(); track b.materia.id) {
+                <tr>
+                  <!-- Hora -->
+                  <td>
+                    <span class="hora-pill"
+                          [style.background]="b.colorLight"
+                          [style.color]="b.color">
+                      {{ formatRango(b) }}
+                    </span>
+                  </td>
+
+                  <!-- Materia -->
+                  <td class="td-nombre">
+                    <div class="td-nombre__dot" [style.background]="b.color"></div>
+                    <div>
+                      <p>{{ b.materia.nombre }}</p>
+                      <span class="td-meta">{{ b.materia.tipo }} · {{ b.materia.modalidad }}</span>
+                    </div>
+                  </td>
+
+                  <!-- Salón -->
+                  <td class="td-salon">
+                    @if (b.materia.salonNombre) {
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+                           stroke="currentColor" stroke-width="2" class="salon-icon">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                        <circle cx="12" cy="10" r="3"/>
+                      </svg>
+                      {{ b.materia.salonNombre }}
+                    } @else {
+                      <span class="td-meta">Sin asignar</span>
+                    }
+                  </td>
+
+                  <!-- Carrera -->
+                  <td class="td-carrera">{{ b.materia.carrera || '—' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+  </div><!-- /body -->
+</div>
