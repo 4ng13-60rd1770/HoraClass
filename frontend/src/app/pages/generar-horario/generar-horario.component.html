@@ -1,0 +1,166 @@
+<div class="generar-container">
+  <div class="page-header">
+    <h1>Generación de Horario Académico</h1>
+    <p>Genere horarios académicos asignando automáticamente franjas, docentes, grupos y aulas</p>
+  </div>
+
+  <!-- Mensajes -->
+  <div *ngIf="successMsg" class="alert alert-success">✅ {{ successMsg }}</div>
+  <div *ngIf="errorMsg" class="alert alert-error">❌ {{ errorMsg }}</div>
+
+  <!-- Panel de generación -->
+  <div class="gen-panel">
+    <div class="gen-form">
+      <div class="input-group">
+        <label>Semestre</label>
+        <input type="text" [(ngModel)]="semestre" placeholder="Ej: 2026-1" [disabled]="generando" />
+      </div>
+      <div class="input-group">
+        <label>Variantes</label>
+        <input type="number" [(ngModel)]="variantes" min="1" [disabled]="generando" />
+      </div>
+      <button class="btn btn-primary btn-generate" (click)="generarHorario()" [disabled]="generando">
+        <span *ngIf="!generando">⚡ Generar Horario</span>
+        <span *ngIf="generando" class="generating">
+          <span class="spinner-sm"></span> Generando horario...
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Horarios existentes -->
+  <div class="existing-schedules" *ngIf="horariosExistentes.length > 0">
+    <h3>Horarios Generados</h3>
+    <div class="schedule-cards">
+      <div class="schedule-card" *ngFor="let h of horariosExistentes" (click)="consultarHorario(h.semestre)">
+        <div class="card-header">
+          <span class="semester-badge">{{ h.semestre }}</span>
+          <span class="status-badge" [class.published]="h.publicado" [class.draft]="!h.publicado">
+            {{ h.estado }}
+          </span>
+        </div>
+        <div class="card-stats">
+          <span>📋 {{ h.totalEntries }} asignaciones</span>
+          <span *ngIf="h.totalConflictos > 0" class="conflicts-count">⚠️ {{ h.totalConflictos }} conflictos</span>
+        </div>
+        <div class="card-date">{{ h.fechaGeneracion }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultado del horario -->
+  <div class="result-section" *ngIf="horario">
+    <div class="result-header">
+      <div class="result-info">
+        <h2>Horario {{ horario.semestre }}</h2>
+        <div class="result-stats">
+          <span class="stat stat-success">✅ {{ horario.totalEntries }} asignaciones exitosas</span>
+          <span class="stat stat-warning" *ngIf="horario.totalConflictos > 0">
+            ⚠️ {{ horario.totalConflictos }} conflictos
+          </span>
+          <span class="stat" [class.stat-published]="horario.publicado">
+            {{ horario.publicado ? '🟢 Publicado' : '🟡 Borrador' }}
+          </span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn btn-view" [class.active]="vista === 'tabla'" (click)="vista = 'tabla'">📊 Tabla</button>
+        <button class="btn btn-view" [class.active]="vista === 'calendario'" (click)="vista = 'calendario'">📅 Calendario</button>
+        <button class="btn btn-success" (click)="publicar()" *ngIf="!horario.publicado && horario.totalConflictos === 0">
+          🚀 Publicar
+        </button>
+        <button class="btn btn-danger" (click)="eliminarHorario()">🗑️ Eliminar</button>
+      </div>
+    </div>
+
+    <!-- Vista Tabla -->
+    <div class="entries-table" *ngIf="vista === 'tabla' && horario.entries?.length">
+      <table>
+        <thead>
+          <tr>
+            <th>Grupo</th>
+            <th>Curso</th>
+            <th>Créditos</th>
+            <th>Docente</th>
+            <th>Día</th>
+            <th>Horario</th>
+            <th>Aula</th>
+            <th>Edificio</th>
+            <th>Capacidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let entry of horario.entries; let i = index">
+            <td><strong>{{ entry.idGrupo }}</strong></td>
+            <td>{{ entry.nombreCurso }}</td>
+            <td class="center">{{ entry.creditosCurso }}</td>
+            <td>{{ entry.nombreDocente }}</td>
+            <td>{{ getDiaLabel(entry.diaSemana) }}</td>
+            <td>{{ entry.horaInicio }} - {{ entry.horaFin }}</td>
+            <td>{{ entry.nombreAula }}</td>
+            <td>{{ entry.edificioAula }}</td>
+            <td class="center">{{ entry.capacidadAula }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Vista Calendario -->
+    <div class="calendar-view" *ngIf="vista === 'calendario'">
+      <div class="calendar-grid">
+        <div class="calendar-header"></div>
+        <div class="calendar-header day-header" *ngFor="let dia of dias">
+          {{ getDiaLabel(dia) }}
+        </div>
+
+        <ng-container *ngFor="let hora of horas">
+          <div class="time-label">{{ hora }}</div>
+          <div class="calendar-cell" *ngFor="let dia of dias">
+            <div
+              class="calendar-event"
+              *ngFor="let entry of getEntriesForCell(dia, hora); let i = index"
+              [style.background]="getEntryColor(i)"
+            >
+              <strong>{{ entry.idGrupo }}</strong>
+              <span>{{ entry.nombreCurso }}</span>
+              <small>{{ entry.nombreDocente }}</small>
+              <small>{{ entry.nombreAula }}</small>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- Alertas -->
+    <div class="alertas-section" *ngIf="horario.alertas?.length">
+      <h3>⚠️ Alertas de conflictos</h3>
+      <ul class="alertas-list">
+        <li *ngFor="let alerta of horario.alertas">{{ alerta }}</li>
+      </ul>
+    </div>
+
+    <!-- Conflictos -->
+    <div class="conflicts-section" *ngIf="horario.conflictos?.length">
+      <h3>⚠️ Conflictos Detectados ({{ horario.conflictos.length }})</h3>
+      <div class="conflicts-list">
+        <div class="conflict-card" *ngFor="let c of horario.conflictos">
+          <div class="conflict-header">
+            <span class="conflict-group">{{ c.idGrupo }}</span>
+            <span class="conflict-course">{{ c.nombreCurso }}</span>
+            <span class="conflict-status">{{ c.estado }}</span>
+          </div>
+          <div class="conflict-reason">
+            <strong>{{ getMotivoLabel(c.motivo) }}</strong>
+          </div>
+          <div class="conflict-desc">{{ c.descripcion }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Cargando horario...</p>
+  </div>
+</div>

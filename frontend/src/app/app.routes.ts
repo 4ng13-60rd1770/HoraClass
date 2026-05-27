@@ -13,6 +13,8 @@ import { HorarioComponent } from './pages/horario/horario.component';
 import { RegistrarHorarioComponent } from './pages/registrar-horario/registrar-horario.component';
 import { InscripcionMateriasComponent } from './pages/inscripcion-materias/inscripcion-materias.component';
 import { DashboardDocenteComponent } from './pages/dashboard-docente/dashboard-docente.component';
+import { FranjasComponent } from './pages/franjas/franjas.component';
+import { GenerarHorarioComponent } from './pages/generar-horario/generar-horario.component';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -32,6 +34,8 @@ export const routes: Routes = [
       { path: 'salones', component: SalonesComponent },
       { path: 'profesores', component: ProfesoresComponent },
       { path: 'estudiantes', component: EstudiantesComponent },
+      { path: 'franjas', component: FranjasComponent },
+      { path: 'generar-horario', component: GenerarHorarioComponent },
     ],
   },
   {

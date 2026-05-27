@@ -1,0 +1,366 @@
+.generar-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+  }
+  p {
+    color: #64748b;
+    margin: 0;
+    font-size: 0.95rem;
+  }
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+.alert-success { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+// ===== Panel de generación =====
+.gen-panel {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  border: 1px solid #e2e8f0;
+}
+.gen-form {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+.input-group {
+  flex: 1;
+  max-width: 300px;
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+  }
+  input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+  }
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.btn-primary { background: #3b82f6; color: white; &:hover { background: #2563eb; } }
+.btn-success { background: #22c55e; color: white; &:hover { background: #16a34a; } }
+.btn-danger { background: #ef4444; color: white; &:hover { background: #dc2626; } }
+.btn-view {
+  background: #f1f5f9;
+  color: #475569;
+  &:hover { background: #e2e8f0; }
+  &.active { background: #3b82f6; color: white; }
+}
+
+.btn-generate {
+  min-width: 200px;
+  padding: 10px 28px;
+  font-size: 1rem;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.generating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.spinner-sm {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+// ===== Horarios existentes =====
+.existing-schedules {
+  margin-bottom: 24px;
+  h3 {
+    font-size: 1.1rem;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+  }
+}
+.schedule-cards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.schedule-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px;
+  min-width: 220px;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+  }
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.semester-badge {
+  font-weight: 700;
+  font-size: 1rem;
+  color: #1e293b;
+}
+.status-badge {
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  &.published { background: #dcfce7; color: #166534; }
+  &.draft { background: #fef3c7; color: #92400e; }
+}
+.card-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  color: #475569;
+  margin-bottom: 6px;
+}
+.conflicts-count { color: #dc2626; }
+.card-date { font-size: 0.75rem; color: #94a3b8; }
+
+// ===== Resultado =====
+.result-section {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.result-info {
+  h2 {
+    margin: 0 0 8px 0;
+    font-size: 1.3rem;
+    color: #1e293b;
+  }
+}
+.result-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.stat {
+  font-size: 0.85rem;
+  font-weight: 500;
+  &.stat-success { color: #16a34a; }
+  &.stat-warning { color: #d97706; }
+  &.stat-published { color: #16a34a; }
+}
+.result-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+// ===== Tabla de entries =====
+.entries-table {
+  overflow-x: auto;
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    td {
+      padding: 10px 16px;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 0.85rem;
+      color: #334155;
+      &.center { text-align: center; }
+    }
+    tr:hover { background: #f8fafc; }
+  }
+}
+
+// ===== Vista Calendario =====
+.calendar-view {
+  padding: 16px;
+  overflow-x: auto;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: 70px repeat(6, 1fr);
+  gap: 1px;
+  background: #e2e8f0;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  min-width: 800px;
+}
+.calendar-header {
+  background: #f8fafc;
+  padding: 10px 8px;
+  font-weight: 600;
+  font-size: 0.8rem;
+  color: #475569;
+  text-align: center;
+}
+.time-label {
+  background: #f8fafc;
+  padding: 8px;
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 60px;
+}
+.calendar-cell {
+  background: white;
+  min-height: 60px;
+  padding: 2px;
+}
+.calendar-event {
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border-left: 3px solid #3b82f6;
+  margin-bottom: 2px;
+  strong { font-size: 0.75rem; color: #1e293b; }
+  span { color: #475569; }
+  small { color: #94a3b8; font-size: 0.65rem; }
+}
+
+// ===== Conflictos =====
+.conflicts-section {
+  padding: 20px 24px;
+  border-top: 1px solid #e2e8f0;
+  h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    color: #dc2626;
+  }
+}
+.conflicts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.conflict-card {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.conflict-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.conflict-group {
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+.conflict-course {
+  color: #475569;
+  font-size: 0.85rem;
+}
+.conflict-status {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: #fee2e2;
+  color: #991b1b;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.conflict-reason {
+  font-size: 0.85rem;
+  color: #b91c1c;
+  margin-bottom: 2px;
+}
+.conflict-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+// ===== Loading =====
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px;
+  color: #64748b;
+}
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top: 3px solid #3b82f6;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 12px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
