@@ -3,6 +3,8 @@ import { authGuard, roleGuard } from './core/guards/auth.guard';
 import { AuthLayoutComponent } from './templates/auth-layout/auth-layout.component';
 import { MainLayoutComponent } from './templates/main-layout/main-layout.component';
 import { LoginComponent } from './pages/login/login.component';
+import { RecoverPasswordComponent } from './pages/recovery-password/recover-password.component';
+import { ResetPasswordComponent } from './pages/reset-password/reset-password.component';
 import { DashboardSecretariaComponent } from './pages/dashboard-secretaria/dashboard-secretaria.component';
 import { CalendariosSecretariaComponent } from './pages/calendarios-secretaria/calendarios-secretaria.component';
 import { SalonesComponent } from './pages/salones/salones.component';
@@ -21,7 +23,11 @@ export const routes: Routes = [
   {
     path: '',
     component: AuthLayoutComponent,
-    children: [{ path: 'login', component: LoginComponent }],
+    children: [
+      { path: 'login', component: LoginComponent },
+      { path: 'recuperar-contrasena', component: RecoverPasswordComponent },
+      { path: 'restablecer-contrasena', component: ResetPasswordComponent },
+    ],
   },
   {
     path: 'secretaria',

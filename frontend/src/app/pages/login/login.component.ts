@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { InputComponent } from '../../atoms/input/input.component';
 import { ButtonComponent } from '../../atoms/button/button.component';
 import { AuthService } from '../../core/services/auth.service';
@@ -9,7 +9,7 @@ import { AuthService } from '../../core/services/auth.service';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent],
+  imports: [CommonModule, FormsModule, InputComponent, ButtonComponent, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
@@ -63,5 +63,8 @@ export class LoginComponent {
         this.loading = false;
       }
     });
+  }
+  goToRecoverPassword() {
+    this.router.navigate(['/recuperar-contrasena']);
   }
 }
