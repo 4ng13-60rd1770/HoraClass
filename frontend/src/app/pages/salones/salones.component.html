@@ -47,7 +47,9 @@
         <div class="form-row">
           <div class="form-group">
             <label>Capacidad (asientos) *</label>
-            <input type="number" [(ngModel)]="form.capacidad" placeholder="30" min="1" />
+            <input type="number" [(ngModel)]="form.capacidad" placeholder="40"
+              [min]="reglas.grupoCupoMinimo" [max]="reglas.grupoCupoBase" />
+            <small class="modal__hint">Entre {{ reglas.grupoCupoMinimo }} y {{ reglas.grupoCupoBase }} asientos.</small>
           </div>
           <div class="form-group">
             <label>Tipo</label>
@@ -73,6 +75,20 @@
               <option value="Psicología">Psicología</option>
               <option value="Biología">Biología</option>
             </select>
+          </div>
+        </div>
+        <div class="form-row form-row--checks">
+          <div class="form-group form-group--check">
+            <label>
+              <input type="checkbox" [(ngModel)]="form.tieneComputadores" />
+              Cuenta con computadores personales
+            </label>
+          </div>
+          <div class="form-group form-group--check">
+            <label>
+              <input type="checkbox" [(ngModel)]="form.sillasMoviles" />
+              Sillas móviles (trabajo en grupo)
+            </label>
           </div>
         </div>
         @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
@@ -108,8 +124,10 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Capacidad</label>
-            <input type="number" [(ngModel)]="formEdit.capacidad" min="1" />
+            <label>Capacidad (asientos) *</label>
+            <input type="number" [(ngModel)]="formEdit.capacidad"
+              [min]="reglas.grupoCupoMinimo" [max]="reglas.grupoCupoBase" />
+            <small class="modal__hint">Entre {{ reglas.grupoCupoMinimo }} y {{ reglas.grupoCupoBase }} asientos.</small>
           </div>
           <div class="form-group">
             <label>Tipo</label>
@@ -139,6 +157,20 @@
             <label>
               <input type="checkbox" [(ngModel)]="formEdit.disponible" />
               Disponible
+            </label>
+          </div>
+        </div>
+        <div class="form-row form-row--checks">
+          <div class="form-group form-group--check">
+            <label>
+              <input type="checkbox" [(ngModel)]="formEdit.tieneComputadores" />
+              Cuenta con computadores personales
+            </label>
+          </div>
+          <div class="form-group form-group--check">
+            <label>
+              <input type="checkbox" [(ngModel)]="formEdit.sillasMoviles" />
+              Sillas móviles (trabajo en grupo)
             </label>
           </div>
         </div>

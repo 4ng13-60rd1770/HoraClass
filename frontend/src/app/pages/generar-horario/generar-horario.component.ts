@@ -70,9 +70,14 @@ export class GenerarHorarioComponent implements OnInit {
       },
       error: (err) => {
         this.generando = false;
-        this.errorMsg =
-          err.error?.error || err.error?.message ||
-          'Error al generar el horario. Verifique que existan grupos, docentes, franjas y aulas.';
+        const msg =
+          err.error?.message ||
+          err.error?.error ||
+          (typeof err.error === 'string' ? err.error : null) ||
+          err.message;
+        this.errorMsg = msg && msg !== 'Http failure response'
+          ? msg
+          : 'Error al generar el horario. Verifique que existan materias, docentes y aulas disponibles.';
       },
     });
   }
@@ -147,12 +152,15 @@ export class GenerarHorarioComponent implements OnInit {
     const labels: Record<string, string> = {
       SIN_DOCENTE_DISPONIBLE: 'Sin docente disponible',
       SIN_AULA_DISPONIBLE: 'Sin aula disponible',
-      SIN_FRANJA_DISPONIBLE: 'Sin franja disponible',
+      SIN_FRANJA_DISPONIBLE: 'Sin bloque horario disponible',
       CARGA_MAXIMA_ALCANZADA: 'Carga máxima alcanzada',
       SIN_AULA_CON_CAPACIDAD: 'Sin aula con capacidad suficiente',
-      DOCENTE_DUPLICADO: 'Docente asignado en más de una clase a la misma franja',
-      AULA_DUPLICADA: 'Aula asignada a más de un grupo en la misma franja',
-      CRUCE_HORARIO: 'Cruce de horario detectado'
+      DOCENTE_DUPLICADO: 'Docente asignado en más de una clase al mismo horario',
+      AULA_DUPLICADA: 'Aula asignada a más de un grupo en el mismo horario',
+      CRUCE_HORARIO: 'Cruce de horario detectado',
+      DOCENTE_NO_HABILITADO_CURSO: 'Docente no habilitado para el curso',
+      DOCENTE_RESTRICCION_HORARIO: 'Restricción horaria del docente',
+      AULA_SIN_REQUISITOS: 'Aula sin requisitos del curso (PC o sillas móviles)',
     };
     return labels[motivo] || motivo;
   }

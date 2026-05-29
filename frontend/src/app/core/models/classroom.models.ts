@@ -6,6 +6,8 @@ export interface ClassroomResponse {
   tipo: string;
   departamento: string;
   disponible: boolean;
+  tieneComputadores?: boolean;
+  sillasMoviles?: boolean;
 }
 
 export interface ClassroomRequest {
@@ -15,4 +17,6 @@ export interface ClassroomRequest {
   tipo: string;
   departamento: string;
   disponible: boolean;
+  tieneComputadores?: boolean;
+  sillasMoviles?: boolean;
 }

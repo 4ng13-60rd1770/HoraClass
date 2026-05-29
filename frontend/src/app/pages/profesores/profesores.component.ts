@@ -5,7 +5,20 @@ import { TopbarComponent } from '../../organisms/topbar/topbar.component';
 import { TeachersGridComponent } from '../../organisms/teachers-grid/teachers-grid.component';
 import { Teacher } from '../../molecules/teacher-card/teacher-card.component';
 import { TeacherService } from '../../core/services/teacher.service';
+import { CourseService } from '../../core/services/course.service';
+import { ScheduleService } from '../../core/services/schedule.service';
 import { TeacherRequest, TeacherResponse } from '../../core/models/teacher.models';
+import { CourseResponse } from '../../core/models/course.models';
+import {
+  ESCALAFONES,
+  RESTRICCIONES_HORARIO,
+  SchedulingRules,
+  TIPOS_VINCULACION,
+  cargaHorasPorVinculacion,
+  labelRestriccion,
+  labelVinculacion,
+} from '../../core/models/scheduling.models';
+import { validateTeacherForm } from '../../core/utils/scheduling-validation.util';
 
 @Component({
   selector: 'app-profesores',
@@ -26,11 +39,27 @@ export class ProfesoresComponent implements OnInit {
   idEditando: number | null = null;
 
   form: TeacherRequest = this.formVacio();
-  formEdit: { carrera: string; cargaHoras: number } = { carrera: '', cargaHoras: 0 };
+  formEdit: TeacherRequest = this.formVacio();
 
-  constructor(private teacherService: TeacherService, private cdr: ChangeDetectorRef) {}
+  cursos: CourseResponse[] = [];
+  reglas: SchedulingRules | null = null;
 
-  ngOnInit() { this.cargarProfesores(); }
+  readonly tiposVinculacion = TIPOS_VINCULACION;
+  readonly restricciones = RESTRICCIONES_HORARIO;
+  readonly escalafones = ESCALAFONES;
+
+  constructor(
+    private teacherService: TeacherService,
+    private courseService: CourseService,
+    private scheduleService: ScheduleService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  ngOnInit() {
+    this.cargarProfesores();
+    this.courseService.getAll().subscribe({ next: c => this.cursos = c });
+    this.scheduleService.getReglas().subscribe({ next: r => this.reglas = r });
+  }
 
   cargarProfesores() {
     this.loading = true;
@@ -48,7 +77,6 @@ export class ProfesoresComponent implements OnInit {
     });
   }
 
-  // ── Crear ──────────────────────────────────────────────
   abrirModal() {
     this.form = this.formVacio();
     this.errorModal = '';
@@ -60,14 +88,51 @@ export class ProfesoresComponent implements OnInit {
   sugerirUsername() {
     if (this.form.primerNombre && this.form.primerApellido && !this.form.username) {
       this.form.username = (this.form.primerNombre[0] + this.form.primerApellido)
-        .toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+        .toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
+  }
+
+  onVinculacionChange() {
+    if (this.form.tipoVinculacion && this.reglas) {
+      this.form.cargaHoras = cargaHorasPorVinculacion(this.form.tipoVinculacion, this.reglas);
+    }
+  }
+
+  onVinculacionEditChange() {
+    if (this.formEdit.tipoVinculacion && this.reglas) {
+      this.formEdit.cargaHoras = cargaHorasPorVinculacion(this.formEdit.tipoVinculacion, this.reglas);
+    }
+  }
+
+  toggleCurso(form: TeacherRequest, idCurso: number) {
+    const list = form.cursosHabilitados ?? [];
+    const idx = list.indexOf(idCurso);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+    } else {
+      list.push(idCurso);
+    }
+    form.cursosHabilitados = [...list];
+  }
+
+  cursoSeleccionado(form: TeacherRequest, idCurso: number): boolean {
+    return (form.cursosHabilitados ?? []).includes(idCurso);
   }
 
   guardar() {
     if (!this.form.idProfesor || !this.form.primerNombre.trim() || !this.form.primerApellido.trim() || !this.form.username.trim()) {
       this.errorModal = 'Cédula, nombre, apellido y username son obligatorios.';
       return;
+    }
+    if (this.reglas) {
+      const err = validateTeacherForm(this.form, this.reglas, this.cursos.length);
+      if (err) {
+        this.errorModal = err;
+        return;
+      }
+      if (!this.form.cargaHoras) {
+        this.form.cargaHoras = cargaHorasPorVinculacion(this.form.tipoVinculacion!, this.reglas);
+      }
     }
     this.guardando = true;
     this.errorModal = '';
@@ -86,20 +151,43 @@ export class ProfesoresComponent implements OnInit {
     });
   }
 
-  // ── Editar ─────────────────────────────────────────────
   abrirEditar(id: number) {
-    const t = this.teachers.find(x => x.idProfesor === id);
-    if (!t) return;
     this.idEditando = id;
-    this.formEdit = { carrera: t.subjects[0] ?? '', cargaHoras: t.loadHours };
     this.errorModal = '';
-    this.modalEditar = true;
+    this.teacherService.getById(id).subscribe({
+      next: (t) => {
+        this.formEdit = {
+          idProfesor: t.idProfesor,
+          primerNombre: t.nombre.split(' ')[0] ?? '',
+          primerApellido: t.nombre.split(' ').slice(1).join(' ') ?? '',
+          username: t.username,
+          carrera: t.departamento ?? '',
+          cargaHoras: t.cargaHoras ?? 0,
+          escalafon: t.escalafon ?? 'ASISTENTE',
+          tipoVinculacion: t.tipoVinculacion ?? 'TIEMPO_COMPLETO',
+          restriccionHorario: t.restriccionHorario ?? 'SIN_RESTRICCION',
+          cursosHabilitados: [...(t.cursosHabilitados ?? [])],
+        };
+        this.modalEditar = true;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorModal = 'No se pudo cargar el docente.';
+      }
+    });
   }
 
   cerrarEditar() { this.modalEditar = false; this.errorModal = ''; this.idEditando = null; }
 
   guardarEdicion() {
     if (!this.idEditando) return;
+    if (this.reglas) {
+      const err = validateTeacherForm(this.formEdit, this.reglas, this.cursos.length);
+      if (err) {
+        this.errorModal = err;
+        return;
+      }
+    }
     this.guardando = true;
     this.teacherService.update(this.idEditando, this.formEdit).subscribe({
       next: () => {
@@ -117,7 +205,6 @@ export class ProfesoresComponent implements OnInit {
     });
   }
 
-  // ── Eliminar ───────────────────────────────────────────
   eliminar(id: number) {
     if (!confirm('¿Eliminar este docente? También se eliminará su acceso al sistema.')) return;
     this.teacherService.delete(id).subscribe({
@@ -127,18 +214,35 @@ export class ProfesoresComponent implements OnInit {
   }
 
   private formVacio(): TeacherRequest {
-    return { idProfesor: 0, primerNombre: '', primerApellido: '', username: '', carrera: '', cargaHoras: 0 };
+    return {
+      idProfesor: 0,
+      primerNombre: '',
+      primerApellido: '',
+      username: '',
+      carrera: '',
+      cargaHoras: 0,
+      escalafon: 'ASISTENTE',
+      tipoVinculacion: 'TIEMPO_COMPLETO',
+      restriccionHorario: 'SIN_RESTRICCION',
+      cursosHabilitados: [],
+    };
   }
 
   private mapToTeacher(t: TeacherResponse): Teacher {
+    const extras: string[] = [];
+    if (t.tipoVinculacion) extras.push(labelVinculacion(t.tipoVinculacion));
+    if (t.restriccionHorario && t.restriccionHorario !== 'SIN_RESTRICCION') {
+      extras.push(labelRestriccion(t.restriccionHorario));
+    }
+    if (t.escalafon) extras.push(t.escalafon);
     return {
       idProfesor: t.idProfesor,
       name: t.nombre,
-      title: '',
+      title: t.escalafon ?? '',
       role: t.departamento ?? 'Docente',
-      subjects: [t.departamento].filter((v): v is string => !!v),
+      subjects: extras.length ? extras : [t.departamento].filter((v): v is string => !!v),
       loadHours: t.cargaHoras ?? 0,
-      maxHours: 40
+      maxHours: t.cargaHoras ?? 20,
     };
   }
 }

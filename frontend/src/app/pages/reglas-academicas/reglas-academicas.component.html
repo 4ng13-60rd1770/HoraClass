@@ -1,0 +1,137 @@
+<div class="reglas-container">
+  <div class="page-header">
+    <h1>Reglas Académicas</h1>
+    <p>Parametrización de cupos, horarios y carga docente según normativa UEB</p>
+  </div>
+
+  @if (successMsg) {
+    <div class="alert alert-success">{{ successMsg }}</div>
+  }
+  @if (errorMsg) {
+    <div class="alert alert-error">{{ errorMsg }}</div>
+  }
+
+  @if (loading) {
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Cargando reglas...</p>
+    </div>
+  } @else {
+    <div class="resumen-card">
+      <strong>Vista previa:</strong> {{ resumen }}
+    </div>
+
+    <form class="reglas-form" (ngSubmit)="guardar()">
+      <!-- Grupos -->
+      <section class="form-section">
+        <h2>Grupos y cupos</h2>
+        <p class="section-desc">Máximo de estudiantes por sección con tolerancia institucional.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Cupo base (estudiantes / máx. aula)</label>
+            <input type="number" [(ngModel)]="reglas.grupoCupoBase" name="grupoCupoBase" min="1" />
+            <small class="field-hint">También es la capacidad máxima de un aula.</small>
+          </div>
+          <div class="form-group">
+            <label>Tolerancia (%)</label>
+            <input type="number" [(ngModel)]="reglas.grupoCupoToleranciaPorcentaje" name="tolerancia" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label>Cupo máximo efectivo</label>
+            <input type="number" [value]="cupoMax" readonly class="readonly" />
+            <small class="field-hint">{{ reglas.grupoCupoBase }} + {{ reglas.grupoCupoToleranciaPorcentaje }}%</small>
+          </div>
+          <div class="form-group">
+            <label>Cupo mínimo de aula (asientos)</label>
+            <input type="number" [(ngModel)]="reglas.grupoCupoMinimo" name="grupoCupoMinimo" min="1" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Sesiones -->
+      <section class="form-section">
+        <h2>Sesiones semanales</h2>
+        <p class="section-desc">Cursos presenciales con sesiones de duración fija.</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Mínimo sesiones/semana</label>
+            <input type="number" [(ngModel)]="reglas.sesionesSemanalesMin" name="sesMin" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Máximo sesiones/semana</label>
+            <input type="number" [(ngModel)]="reglas.sesionesSemanalesMax" name="sesMax" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Duración por sesión (horas)</label>
+            <input type="number" [(ngModel)]="reglas.duracionSesionHoras" name="duracion" min="1" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Horario -->
+      <section class="form-section">
+        <h2>Horario de clases</h2>
+        <p class="section-desc">Ventanas permitidas para programar sesiones (se generan automáticamente al crear horarios).</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Lun–Vie inicio</label>
+            <input type="time" [(ngModel)]="reglas.horaInicioSemana" name="iniSemana" />
+          </div>
+          <div class="form-group">
+            <label>Lun–Vie fin</label>
+            <input type="time" [(ngModel)]="reglas.horaFinSemana" name="finSemana" />
+          </div>
+          <div class="form-group">
+            <label>Sábado inicio</label>
+            <input type="time" [(ngModel)]="reglas.horaInicioSabado" name="iniSabado" />
+          </div>
+          <div class="form-group">
+            <label>Sábado fin</label>
+            <input type="time" [(ngModel)]="reglas.horaFinSabado" name="finSabado" />
+          </div>
+          <div class="form-group">
+            <label>Almuerzo inicio (sin clases)</label>
+            <input type="time" [(ngModel)]="reglas.horaInicioAlmuerzo" name="iniAlmuerzo" />
+          </div>
+          <div class="form-group">
+            <label>Almuerzo fin</label>
+            <input type="time" [(ngModel)]="reglas.horaFinAlmuerzo" name="finAlmuerzo" />
+          </div>
+        </div>
+      </section>
+
+      <!-- Carga docente -->
+      <section class="form-section">
+        <h2>Carga horaria docente</h2>
+        <p class="section-desc">Horas semanales según tipo de vinculación (División de Gestión del Talento Humano).</p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tiempo completo (h/sem)</label>
+            <input type="number" [(ngModel)]="reglas.cargaHorasTiempoCompleto" name="cargaTC" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Tres cuartos (h/sem)</label>
+            <input type="number" [(ngModel)]="reglas.cargaHorasTresCuartos" name="carga34" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Medio tiempo (h/sem)</label>
+            <input type="number" [(ngModel)]="reglas.cargaHorasMedioTiempo" name="cargaMT" min="1" />
+          </div>
+          <div class="form-group">
+            <label>Cuarto de tiempo (h/sem)</label>
+            <input type="number" [(ngModel)]="reglas.cargaHorasCuartoTiempo" name="carga14" min="1" />
+          </div>
+        </div>
+      </section>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="restablecer()" [disabled]="guardando">
+          Restablecer defaults
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="guardando">
+          {{ guardando ? 'Guardando…' : 'Guardar reglas' }}
+        </button>
+      </div>
+    </form>
+  }
+</div>

@@ -59,10 +59,55 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Carga Horaria</label>
-            <input type="number" [(ngModel)]="form.cargaHoras" placeholder="12" min="0" />
+            <label>Escalafón</label>
+            <select [(ngModel)]="form.escalafon">
+              @for (e of escalafones; track e.value) {
+                <option [value]="e.value">{{ e.label }}</option>
+              }
+            </select>
           </div>
         </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de vinculación</label>
+            <select [(ngModel)]="form.tipoVinculacion" (ngModelChange)="onVinculacionChange()">
+              @for (v of tiposVinculacion; track v.value) {
+                <option [value]="v.value">{{ v.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Restricción horaria</label>
+            <select [(ngModel)]="form.restriccionHorario">
+              @for (r of restricciones; track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carga horaria (hrs/semana)</label>
+            <input type="number" [(ngModel)]="form.cargaHoras" placeholder="Auto según vinculación" min="0" />
+            <small class="modal__hint">Según vinculación: TC {{ reglas?.cargaHorasTiempoCompleto ?? 20 }}h · ¾ {{ reglas?.cargaHorasTresCuartos ?? 15 }}h · ½ {{ reglas?.cargaHorasMedioTiempo ?? 10 }}h · ¼ {{ reglas?.cargaHorasCuartoTiempo ?? 5 }}h.</small>
+          </div>
+        </div>
+        @if (cursos.length > 0) {
+          <div class="form-group">
+            <label>Cursos habilitados *</label>
+            <small class="modal__hint">Solo puede orientar los cursos marcados (experiencia y especialidad).</small>
+            <div class="checkbox-grid">
+              @for (c of cursos; track c.idCurso) {
+                <label class="checkbox-item">
+                  <input type="checkbox"
+                    [checked]="cursoSeleccionado(form, c.idCurso)"
+                    (change)="toggleCurso(form, c.idCurso)" />
+                  {{ c.nombre }} ({{ c.idCurso }})
+                </label>
+              }
+            </div>
+          </div>
+        }
         <p class="modal__hint">La contraseña inicial será la cédula del docente.</p>
         @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
       </div>
@@ -100,10 +145,54 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Carga Horaria</label>
+            <label>Escalafón</label>
+            <select [(ngModel)]="formEdit.escalafon">
+              @for (e of escalafones; track e.value) {
+                <option [value]="e.value">{{ e.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tipo de vinculación</label>
+            <select [(ngModel)]="formEdit.tipoVinculacion" (ngModelChange)="onVinculacionEditChange()">
+              @for (v of tiposVinculacion; track v.value) {
+                <option [value]="v.value">{{ v.label }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Restricción horaria</label>
+            <select [(ngModel)]="formEdit.restriccionHorario">
+              @for (r of restricciones; track r.value) {
+                <option [value]="r.value">{{ r.label }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Carga horaria (hrs/semana)</label>
             <input type="number" [(ngModel)]="formEdit.cargaHoras" min="0" />
           </div>
         </div>
+        @if (cursos.length > 0) {
+          <div class="form-group">
+            <label>Cursos habilitados *</label>
+            <small class="modal__hint">Solo puede orientar los cursos marcados (experiencia y especialidad).</small>
+            <div class="checkbox-grid">
+              @for (c of cursos; track c.idCurso) {
+                <label class="checkbox-item">
+                  <input type="checkbox"
+                    [checked]="cursoSeleccionado(formEdit, c.idCurso)"
+                    (change)="toggleCurso(formEdit, c.idCurso)" />
+                  {{ c.nombre }} ({{ c.idCurso }})
+                </label>
+              }
+            </div>
+          </div>
+        }
         @if (errorModal) { <p class="modal__error">{{ errorModal }}</p> }
       </div>
       <div class="modal__footer">

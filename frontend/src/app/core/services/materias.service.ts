@@ -16,6 +16,8 @@ export interface MateriaShared {
   codigo?:     string;
   tipo?:       string;
   modalidad?:  string;
+  requiereComputadores?: boolean;
+  requiereSillasMoviles?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })

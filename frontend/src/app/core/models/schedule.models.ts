@@ -1,22 +1,3 @@
-// ========== TimeSlot (Franja Horaria) ==========
-
-export interface TimeSlotRequest {
-  diaSemana: string;
-  horaInicio: string;
-  horaFin: string;
-  turno: string;
-  bloqueado: boolean;
-}
-
-export interface TimeSlotResponse {
-  idFranja: number;
-  diaSemana: string;
-  horaInicio: string;
-  horaFin: string;
-  turno: string;
-  bloqueado: boolean;
-}
-
 // ========== Schedule (Horario Generado) ==========
 
 export interface ScheduleResponse {

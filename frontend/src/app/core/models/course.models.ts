@@ -5,6 +5,9 @@ export interface CourseRequest {
   creditos: number;
   idModalidad: number;
   idTipoCurso: number;
+  sesionesSemanales?: number;
+  requiereComputadores?: boolean;
+  requiereSillasMoviles?: boolean;
 }
 
 export interface CourseResponse {
@@ -14,6 +17,9 @@ export interface CourseResponse {
   creditos: number;
   modalidad: string;
   tipoCurso: string;
+  sesionesSemanales?: number;
+  requiereComputadores?: boolean;
+  requiereSillasMoviles?: boolean;
 }
 
 export interface GroupRequest {

@@ -1,45 +1,21 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable, catchError, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
-  TimeSlotRequest,
-  TimeSlotResponse,
   ScheduleResponse,
 } from '../models/schedule.models';
+import { DEFAULT_SCHEDULING_RULES, SchedulingRules } from '../models/scheduling.models';
 
 @Injectable({ providedIn: 'root' })
 export class ScheduleService {
   private horarioUrl = `${environment.apiUrl}/horarios`;
-  private franjaUrl = `${environment.apiUrl}/franjas`;
+  private reglasUrl = `${environment.apiUrl}/admin/scheduling/reglas`;
+
+  private reglasSubject = new BehaviorSubject<SchedulingRules>(DEFAULT_SCHEDULING_RULES);
+  reglas$ = this.reglasSubject.asObservable();
 
   constructor(private http: HttpClient) {}
-
-  // ========== Franjas Horarias ==========
-
-  getFranjas(): Observable<TimeSlotResponse[]> {
-    return this.http.get<TimeSlotResponse[]>(this.franjaUrl);
-  }
-
-  getFranjasDisponibles(): Observable<TimeSlotResponse[]> {
-    return this.http.get<TimeSlotResponse[]>(`${this.franjaUrl}/disponibles`);
-  }
-
-  getFranja(id: number): Observable<TimeSlotResponse> {
-    return this.http.get<TimeSlotResponse>(`${this.franjaUrl}/${id}`);
-  }
-
-  crearFranja(franja: TimeSlotRequest): Observable<TimeSlotResponse> {
-    return this.http.post<TimeSlotResponse>(this.franjaUrl, franja);
-  }
-
-  actualizarFranja(id: number, franja: TimeSlotRequest): Observable<TimeSlotResponse> {
-    return this.http.put<TimeSlotResponse>(`${this.franjaUrl}/${id}`, franja);
-  }
-
-  eliminarFranja(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.franjaUrl}/${id}`);
-  }
 
   // ========== Horarios ==========
 
@@ -67,5 +43,24 @@ export class ScheduleService {
 
   eliminarHorario(semestre: string): Observable<void> {
     return this.http.delete<void>(`${this.horarioUrl}/${semestre}`);
+  }
+
+  getReglas(): Observable<SchedulingRules> {
+    return this.http.get<SchedulingRules>(this.reglasUrl).pipe(
+      catchError(() => of(DEFAULT_SCHEDULING_RULES)),
+      tap(r => this.reglasSubject.next(r)),
+    );
+  }
+
+  updateReglas(reglas: SchedulingRules): Observable<SchedulingRules> {
+    return this.http.put<SchedulingRules>(this.reglasUrl, reglas).pipe(
+      tap(r => this.reglasSubject.next(r)),
+    );
+  }
+
+  restablecerReglas(): Observable<SchedulingRules> {
+    return this.http.post<SchedulingRules>(`${this.reglasUrl}/restablecer`, {}).pipe(
+      tap(r => this.reglasSubject.next(r)),
+    );
   }
 }

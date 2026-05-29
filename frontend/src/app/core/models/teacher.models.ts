@@ -6,6 +6,9 @@ export interface TeacherResponse {
   especialidad: string;
   cargaHoras: number;
   escalafon: string;
+  tipoVinculacion: string;
+  restriccionHorario: string;
+  cursosHabilitados?: number[];
 }
 
 export interface TeacherRequest {
@@ -15,4 +18,8 @@ export interface TeacherRequest {
   username: string;
   carrera: string;
   cargaHoras: number;
+  escalafon?: string;
+  tipoVinculacion?: string;
+  restriccionHorario?: string;
+  cursosHabilitados?: number[];
 }

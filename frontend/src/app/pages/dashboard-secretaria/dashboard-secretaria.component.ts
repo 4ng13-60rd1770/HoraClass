@@ -8,8 +8,20 @@ import { StatsRowComponent, StatData } from '../../organisms/stats-row/stats-row
 import { StudentService } from '../../core/services/student.service';
 import { TeacherService } from '../../core/services/teacher.service';
 import { ClassroomService } from '../../core/services/classroom.service';
+import { ScheduleService } from '../../core/services/schedule.service';
 import { ClassroomResponse } from '../../core/models/classroom.models';
 import { MateriasService, MateriaShared } from '../../core/services/materias.service';
+import {
+  DEFAULT_SCHEDULING_RULES,
+  SchedulingRules,
+  cupoMaximoPermitido,
+} from '../../core/models/scheduling.models';
+import {
+  addHoursToTime,
+  validateGroupCapacity,
+  validateMateriaHorario,
+  validateSalonParaCupo,
+} from '../../core/utils/scheduling-validation.util';
 
 // ── SVG icons para stats ────────────────────────────────────────────────────
 const SVG_CLASSROOM = `<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#5a8a5e" stroke-width="1.6">
@@ -73,6 +85,7 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
   readonly diasNombres = DIAS_NOMBRES;
   formHorario:     HorarioPicker = this.horarioVacio();
   formEditHorario: HorarioPicker = this.horarioVacio();
+  reglas: SchedulingRules = DEFAULT_SCHEDULING_RULES;
 
   private sub = new Subscription();
 
@@ -81,12 +94,15 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
     private studentService:   StudentService,
     private teacherService:   TeacherService,
     private classroomService: ClassroomService,
+    private scheduleService: ScheduleService,
     private svc:              MateriasService,
     private cdr:              ChangeDetectorRef,
   ) {}
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
   ngOnInit(): void {
+    this.scheduleService.getReglas().subscribe({ next: r => this.reglas = r });
+
     this.sub.add(
       this.svc.materias$.subscribe(list => {
         this.materias = list;
@@ -148,7 +164,12 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
 
   // ── Horario picker ────────────────────────────────────────────────────────
   private horarioVacio(): HorarioPicker {
-    return { dias: [false, false, false, false, false], inicio: '08:00', fin: '10:00' };
+    const inicio = DEFAULT_SCHEDULING_RULES.horaInicioSemana;
+    return {
+      dias: [false, false, false, false, false],
+      inicio,
+      fin: addHoursToTime(inicio, DEFAULT_SCHEDULING_RULES.duracionSesionHoras),
+    };
   }
 
   buildHorario(h: HorarioPicker): string {
@@ -185,22 +206,50 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
       this.errorModal = 'Nombre y carrera son obligatorios.';
       return;
     }
+    const cupoErr = validateGroupCapacity(this.form.cupoMax, this.reglas);
+    if (cupoErr) {
+      this.errorModal = cupoErr;
+      return;
+    }
+    const horarioErr = validateMateriaHorario(
+      this.formHorario.dias,
+      this.formHorario.inicio,
+      this.formHorario.fin,
+      this.reglas,
+    );
+    if (horarioErr) {
+      this.errorModal = horarioErr;
+      return;
+    }
     if (this.sinSalonesCrear) {
       this.errorModal = 'No hay salones disponibles para esta carrera. Primero registra un salón en la sección Salones.';
       return;
     }
     const horario = this.buildHorario(this.formHorario);
     const salon   = this.allClassrooms.find(s => s.idSalon === this.form.salonId);
+    const salonErr = validateSalonParaCupo(
+      salon?.capacidad ?? 0,
+      this.form.cupoMax,
+      this.form.requiereComputadores ?? false,
+      this.form.requiereSillasMoviles ?? false,
+      salon,
+    );
+    if (salon && salonErr) {
+      this.errorModal = salonErr;
+      return;
+    }
     this.svc.add({
       nombre:      this.form.nombre,
       carrera:     this.form.carrera,
-      cupoMax:     this.form.cupoMax || 30,
+      cupoMax:     this.form.cupoMax || this.reglas.grupoCupoBase,
       horario,
       salonId:     this.form.salonId,
       salonNombre: salon?.nombre,
       codigo:      this.form.codigo,
       tipo:        this.form.tipo,
       modalidad:   this.form.modalidad,
+      requiereComputadores: this.form.requiereComputadores ?? false,
+      requiereSillasMoviles: this.form.requiereSillasMoviles ?? false,
     }).subscribe({
       next: () => {
         this.modalAbrir  = false;
@@ -219,6 +268,8 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
       nombre:   m.nombre,    carrera:   m.carrera,   cupoMax:  m.cupoMax,
       horario:  m.horario,   salonId:   m.salonId ?? null,
       codigo:   m.codigo ?? '', tipo: m.tipo ?? 'Obligatoria', modalidad: m.modalidad ?? 'Diurna',
+      requiereComputadores: m.requiereComputadores ?? false,
+      requiereSillasMoviles: m.requiereSillasMoviles ?? false,
     };
     this.formEditHorario = this.pickerFromString(m.horario ?? '');
     this.errorModal  = '';
@@ -232,18 +283,46 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
       this.errorModal = 'Nombre y carrera son obligatorios.';
       return;
     }
+    const cupoErr = validateGroupCapacity(this.formEdit.cupoMax, this.reglas);
+    if (cupoErr) {
+      this.errorModal = cupoErr;
+      return;
+    }
+    const horarioErr = validateMateriaHorario(
+      this.formEditHorario.dias,
+      this.formEditHorario.inicio,
+      this.formEditHorario.fin,
+      this.reglas,
+    );
+    if (horarioErr) {
+      this.errorModal = horarioErr;
+      return;
+    }
     if (this.sinSalonesEditar) {
       this.errorModal = 'No hay salones disponibles para esta carrera.';
       return;
     }
     const horario = this.buildHorario(this.formEditHorario);
     const salon   = this.allClassrooms.find(s => s.idSalon === this.formEdit.salonId);
+    const salonErr = validateSalonParaCupo(
+      salon?.capacidad ?? 0,
+      this.formEdit.cupoMax,
+      this.formEdit.requiereComputadores ?? false,
+      this.formEdit.requiereSillasMoviles ?? false,
+      salon,
+    );
+    if (salon && salonErr) {
+      this.errorModal = salonErr;
+      return;
+    }
     this.svc.update(this.idEditando!, {
       nombre:      this.formEdit.nombre,   carrera:     this.formEdit.carrera,
       cupoMax:     this.formEdit.cupoMax,  horario,
       salonId:     this.formEdit.salonId,  salonNombre: salon?.nombre,
       codigo:      this.formEdit.codigo,   tipo:        this.formEdit.tipo,
       modalidad:   this.formEdit.modalidad,
+      requiereComputadores: this.formEdit.requiereComputadores ?? false,
+      requiereSillasMoviles: this.formEdit.requiereSillasMoviles ?? false,
     }).subscribe({
       next: () => {
         this.modalEditar = false;
@@ -265,9 +344,18 @@ export class DashboardSecretariaComponent implements OnInit, OnDestroy {
   // ── Form vacío ────────────────────────────────────────────────────────────
   private formVacio() {
     return {
-      nombre: '', carrera: '', cupoMax: 30, horario: '',
+      nombre: '', carrera: '', cupoMax: DEFAULT_SCHEDULING_RULES.grupoCupoBase, horario: '',
       salonId: null as number | null,
       codigo: '', tipo: 'Obligatoria', modalidad: 'Diurna',
+      requiereComputadores: false, requiereSillasMoviles: false,
     };
+  }
+
+  get cupoMaxPermitido(): number {
+    return cupoMaximoPermitido(this.reglas);
+  }
+
+  onHorarioInicioChange(picker: HorarioPicker): void {
+    picker.fin = addHoursToTime(picker.inicio, this.reglas.duracionSesionHoras);
   }
 }
