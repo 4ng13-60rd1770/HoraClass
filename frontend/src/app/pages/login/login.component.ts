@@ -27,7 +27,7 @@ export class LoginComponent {
   get isUsernameValid(): boolean {
     if (!this.username.trim()) return false;
     
-    const emailOrUserRegex = /^(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$)|(^[a-zA-Z0-9_]{4,15}$)$/;
+    const emailOrUserRegex = /^(^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$)|(^[\w]{4,15}$)$/;
     return emailOrUserRegex.test(this.username.trim());
   }
 
