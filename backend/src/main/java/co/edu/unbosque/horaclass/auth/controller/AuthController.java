@@ -1,7 +1,11 @@
 package co.edu.unbosque.horaclass.auth.controller;
 
+import co.edu.unbosque.horaclass.auth.dto.ForgotPasswordRequestDto;
 import co.edu.unbosque.horaclass.auth.dto.LoginRequestDto;
 import co.edu.unbosque.horaclass.auth.dto.LoginResponseDto;
+import co.edu.unbosque.horaclass.auth.dto.MessageResponseDto;
+import co.edu.unbosque.horaclass.auth.dto.ResetPasswordRequestDto;
+import co.edu.unbosque.horaclass.auth.service.PasswordResetService;
 import co.edu.unbosque.horaclass.jwt.JwtUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -30,6 +34,8 @@ public class AuthController {
     private JwtUtils jwtUtils;
     @Autowired
     private AuthenticationManager authenticationManager;
+    @Autowired
+    private PasswordResetService passwordResetService;
 
     @PostMapping("/signin")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequestDto loginRequestDto) {
@@ -54,5 +60,25 @@ public class AuthController {
 
         LoginResponseDto response = new LoginResponseDto(jwtToken, userDetails.getUsername(), roles);
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<MessageResponseDto> forgotPassword(@RequestBody ForgotPasswordRequestDto request) {
+        if (request.getUsername() == null || request.getUsername().isBlank()) {
+            return ResponseEntity.badRequest().body(new MessageResponseDto("Debes ingresar tu usuario o correo."));
+        }
+        return ResponseEntity.ok(passwordResetService.requestPasswordReset(request.getUsername()));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequestDto request) {
+        if (request.getToken() == null || request.getToken().isBlank()) {
+            return ResponseEntity.badRequest().body(new MessageResponseDto("Token de recuperación inválido."));
+        }
+        try {
+            return ResponseEntity.ok(passwordResetService.resetPassword(request.getToken(), request.getNewPassword()));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new MessageResponseDto(ex.getMessage()));
+        }
     }
 }
