@@ -29,5 +29,13 @@ public class Teacher {
     private Integer cargaHoras;  // Horas máximas por semana
 
     @Column(name = "Escalafon", length = 50)
-    private String escalafon;  // ASC, ASOCIADO, ORDINARIO, etc.
+    private String escalafon;  // AUXILIAR, ASISTENTE, ASOCIADO, TITULAR
+
+    /** TIEMPO_COMPLETO, TRES_CUARTOS, MEDIO_TIEMPO, CUARTO_TIEMPO */
+    @Column(name = "TipoVinculacion", length = 30)
+    private String tipoVinculacion;
+
+    /** SIN_RESTRICCION, SOLO_MANANA, DESPUES_16, DESPUES_18 */
+    @Column(name = "RestriccionHorario", length = 30)
+    private String restriccionHorario;
 }

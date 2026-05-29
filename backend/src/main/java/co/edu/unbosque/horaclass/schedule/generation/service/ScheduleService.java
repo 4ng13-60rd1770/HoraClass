@@ -17,7 +17,7 @@ import co.edu.unbosque.horaclass.schedule.generation.repository.ScheduleConflict
 import co.edu.unbosque.horaclass.schedule.generation.repository.ScheduleEntryRepository;
 import co.edu.unbosque.horaclass.schedule.generation.repository.ScheduleRepository;
 import co.edu.unbosque.horaclass.schedule.timeslot.model.TimeSlot;
-import co.edu.unbosque.horaclass.schedule.timeslot.repository.TimeSlotRepository;
+import co.edu.unbosque.horaclass.schedule.timeslot.service.TimeSlotBootstrapService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,26 +37,29 @@ public class ScheduleService {
     private final ScheduleConflictRepository conflictRepository;
     private final GroupRepository groupRepository;
     private final TeacherRepository teacherRepository;
-    private final TimeSlotRepository timeSlotRepository;
+    private final TimeSlotBootstrapService timeSlotBootstrapService;
     private final ClassroomRepository classroomRepository;
     private final ScheduleGenerator generator;
+    private final MateriaGroupSyncService materiaGroupSyncService;
 
     public ScheduleService(ScheduleRepository scheduleRepository,
                            ScheduleEntryRepository entryRepository,
                            ScheduleConflictRepository conflictRepository,
                            GroupRepository groupRepository,
                            TeacherRepository teacherRepository,
-                           TimeSlotRepository timeSlotRepository,
+                           TimeSlotBootstrapService timeSlotBootstrapService,
                            ClassroomRepository classroomRepository,
-                           ScheduleGenerator generator) {
+                           ScheduleGenerator generator,
+                           MateriaGroupSyncService materiaGroupSyncService) {
         this.scheduleRepository = scheduleRepository;
         this.entryRepository = entryRepository;
         this.conflictRepository = conflictRepository;
         this.groupRepository = groupRepository;
         this.teacherRepository = teacherRepository;
-        this.timeSlotRepository = timeSlotRepository;
+        this.timeSlotBootstrapService = timeSlotBootstrapService;
         this.classroomRepository = classroomRepository;
         this.generator = generator;
+        this.materiaGroupSyncService = materiaGroupSyncService;
     }
 
     /**
@@ -74,14 +77,16 @@ public class ScheduleService {
                     ". Elimínelo primero si desea regenerar.");
         }
 
-        // Cargar datos necesarios
+        // Sincronizar materias del dashboard → grupos académicos
+        materiaGroupSyncService.syncFromMaterias();
+
         List<Group> grupos = groupRepository.findByEstadoGrupoNombre("ACTIVO");
         if (grupos.isEmpty()) {
             grupos = groupRepository.findByEstadoGrupoNombre("ABIERTO");
         }
         if (grupos.isEmpty()) {
             throw new RuntimeException(
-                    "No hay grupos activos registrados. Cree grupos antes de generar el horario.");
+                    "No hay materias registradas. Cree materias en el Dashboard antes de generar el horario.");
         }
 
         List<Teacher> docentes = teacherRepository.findAll();
@@ -90,11 +95,7 @@ public class ScheduleService {
                     "No hay docentes registrados en el sistema.");
         }
 
-        List<TimeSlot> franjas = timeSlotRepository.findByBloqueadoFalse();
-        if (franjas.isEmpty()) {
-            throw new RuntimeException(
-                    "No hay franjas horarias disponibles. Registre franjas horarias primero.");
-        }
+        List<TimeSlot> franjas = timeSlotBootstrapService.ensureAvailableSlots();
 
         List<Classroom> aulas = classroomRepository.findByDisponible(true);
         if (aulas.isEmpty()) {

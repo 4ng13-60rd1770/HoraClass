@@ -5,6 +5,7 @@ import co.edu.unbosque.horaclass.academy.classroom.dto.ClassroomResponseDto;
 import co.edu.unbosque.horaclass.academy.classroom.model.Classroom;
 import co.edu.unbosque.horaclass.academy.classroom.repository.ClassroomRepository;
 import co.edu.unbosque.horaclass.academy.classroom.service.ClassroomService;
+import co.edu.unbosque.horaclass.schedule.validation.SchedulingRulesValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,16 +19,23 @@ public class ClassroomServiceImpl implements ClassroomService {
 
     private final ClassroomRepository classroomRepository;
     private final ModelMapper mapper;
+    private final SchedulingRulesValidator schedulingRulesValidator;
 
-    public ClassroomServiceImpl(ClassroomRepository classroomRepository, ModelMapper mapper) {
+    public ClassroomServiceImpl(ClassroomRepository classroomRepository,
+                                ModelMapper mapper,
+                                SchedulingRulesValidator schedulingRulesValidator) {
         this.classroomRepository = classroomRepository;
         this.mapper = mapper;
+        this.schedulingRulesValidator = schedulingRulesValidator;
     }
 
     @Override
     public ClassroomResponseDto crearSalon(ClassroomRequestDto request) {
+        schedulingRulesValidator.validateClassroomCapacity(request.getCapacidad());
         Classroom salon = mapper.map(request, Classroom.class);
         if (salon.getDisponible() == null) salon.setDisponible(true);
+        if (salon.getTieneComputadores() == null) salon.setTieneComputadores(false);
+        if (salon.getSillasMoviles() == null) salon.setSillasMoviles(false);
         return mapper.map(classroomRepository.save(salon), ClassroomResponseDto.class);
     }
 
@@ -49,6 +57,7 @@ public class ClassroomServiceImpl implements ClassroomService {
 
     @Override
     public ClassroomResponseDto actualizarSalon(Integer id, ClassroomRequestDto request) {
+        schedulingRulesValidator.validateClassroomCapacity(request.getCapacidad());
         Classroom salon = classroomRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Salón no encontrado con ID: " + id));
         mapper.map(request, salon);

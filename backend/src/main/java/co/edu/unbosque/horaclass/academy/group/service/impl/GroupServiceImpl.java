@@ -17,6 +17,7 @@ import co.edu.unbosque.horaclass.academy.teacher.repository.TeacherRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import co.edu.unbosque.horaclass.schedule.validation.SchedulingRulesValidator;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -30,17 +31,20 @@ public class GroupServiceImpl implements GroupService {
     private final GroupStateRepository groupStateRepository;
     private final TeacherRepository teacherRepository;
     ModelMapper mapper;
+    private final SchedulingRulesValidator schedulingRulesValidator;
 
     public GroupServiceImpl(GroupRepository groupRepository,
                             CourseRepository courseRepository,
                             GroupStateRepository groupStateRepository,
                             TeacherRepository teacherRepository,
-                            ModelMapper mapper) {
+                            ModelMapper mapper,
+                            SchedulingRulesValidator schedulingRulesValidator) {
         this.groupRepository = groupRepository;
         this.courseRepository = courseRepository;
         this.groupStateRepository = groupStateRepository;
         this.teacherRepository = teacherRepository;
         this.mapper = mapper;
+        this.schedulingRulesValidator = schedulingRulesValidator;
     }
 
     private void validacionRepos(GroupRequestDto request){
@@ -59,43 +63,14 @@ public class GroupServiceImpl implements GroupService {
     public GroupResponseDto crearGrupo(GroupRequestDto request) {
 
         validacionRepos(request);
-        // VALIDACIÓN 4: Cupo mínimo >= 10
-        if (request.getCupoMinimo() < 10) {
-            throw new RuntimeException(
-                    "El cupo mínimo debe ser al menos 10 estudiantes. Valor recibido: " +
-                            request.getCupoMinimo());
-        }
-        // VALIDACIÓN 5: Cupo máximo <= 40 + 10% tolerancia (44)
-        int cupoMaximoPermitido = 44; // 40 + 10%
-        if (request.getCupoMaximo() > cupoMaximoPermitido) {
-            throw new RuntimeException(
-                    "El cupo máximo no puede superar " + cupoMaximoPermitido +
-                            " estudiantes (40 + 10% tolerancia). Valor recibido: " +
-                            request.getCupoMaximo());
-        }
-        // VALIDACIÓN 6: Cupo mínimo <= Cupo máximo
-        if (request.getCupoMinimo() > request.getCupoMaximo()) {
-            throw new RuntimeException(
-                    "El cupo mínimo (" + request.getCupoMinimo() +
-                            ") no puede ser mayor que el cupo máximo (" + request.getCupoMaximo() + ")");
-        }
+        schedulingRulesValidator.validateGroupCapacity(request.getCupoMinimo(), request.getCupoMaximo());
+        schedulingRulesValidator.validateTeacherCanTeachCourse(request.getIdProfesor(), request.getIdCurso());
 
-        // VALIDACIÓN 7: Grupo no duplicado (mismo curso + profesor)
         if (groupRepository.existsByCursoIdCursoAndProfesorIdProfesor(
                 request.getIdCurso(), request.getIdProfesor())) {
             throw new RuntimeException(
                     "Ya existe un grupo con ese curso y profesor asignado");
         }
-
-        // TODO: VALIDACIÓN 8: Profesor puede dictar ese curso (PRO_CUR)
-        // Esta validación requiere la tabla PRO_CUR
-        /*
-        if (!proCurRepository.existsByIdEmpleadoAndIdCurso(
-                request.getIdProfesor(), request.getIdCurso())) {
-            throw new RuntimeException(
-                "El profesor no está habilitado para dictar este curso");
-        }
-        */
 
         Course curso = courseRepository.findById(request.getIdCurso()).get();
         Teacher profesor = teacherRepository.findById(request.getIdProfesor()).get();
@@ -134,15 +109,8 @@ public class GroupServiceImpl implements GroupService {
         GroupState estadoGrupo = groupStateRepository.findById(request.getIdEstadoGrupo())
                 .orElseThrow(() -> new RuntimeException(
                         "El estado de grupo con ID " + request.getIdEstadoGrupo() + " no existe"));
-        if (request.getCupoMinimo() < 10) {
-            throw new RuntimeException("El cupo mínimo debe ser al menos 10");
-        }
-        if (request.getCupoMaximo() > 44) {
-            throw new RuntimeException("El cupo máximo no puede superar 44");
-        }
-        if (request.getCupoMinimo() > request.getCupoMaximo()) {
-            throw new RuntimeException("El cupo mínimo no puede ser mayor al máximo");
-        }
+        schedulingRulesValidator.validateGroupCapacity(request.getCupoMinimo(), request.getCupoMaximo());
+        schedulingRulesValidator.validateTeacherCanTeachCourse(request.getIdProfesor(), request.getIdCurso());
         grupo.setCurso(curso);
         grupo.setProfesor(profesor);
         grupo.setCupoMaximo(request.getCupoMaximo());

@@ -32,4 +32,10 @@ public class Classroom {
 
     @Column(name = "Disponible", nullable = false)
     private Boolean disponible = true;
+
+    @Column(name = "TieneComputadores")
+    private Boolean tieneComputadores = false;
+
+    @Column(name = "SillasMoviles")
+    private Boolean sillasMoviles = false;
 }

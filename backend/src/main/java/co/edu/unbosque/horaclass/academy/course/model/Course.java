@@ -32,4 +32,14 @@ public class Course {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idTipoCurso")
     private CourseType idTipoCurso;
+
+    /** Sesiones presenciales semanales (1 a 4, parametrizable). */
+    @Column(name = "SesionesSemanales")
+    private Integer sesionesSemanales = 1;
+
+    @Column(name = "RequiereComputadores")
+    private Boolean requiereComputadores = false;
+
+    @Column(name = "RequiereSillasMoviles")
+    private Boolean requiereSillasMoviles = false;
 }

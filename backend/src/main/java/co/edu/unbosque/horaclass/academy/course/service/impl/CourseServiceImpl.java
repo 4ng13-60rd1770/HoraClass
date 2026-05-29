@@ -9,6 +9,7 @@ import co.edu.unbosque.horaclass.academy.course.repositiry.CourseRepository;
 import co.edu.unbosque.horaclass.academy.course.repositiry.CourseTypeRepository;
 import co.edu.unbosque.horaclass.academy.course.repositiry.ModeRepository;
 import co.edu.unbosque.horaclass.academy.course.service.CourseService;
+import co.edu.unbosque.horaclass.schedule.validation.SchedulingRulesValidator;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,11 +24,15 @@ public class CourseServiceImpl implements CourseService {
     private final CourseRepository cursoRepository;
     private final ModeRepository modalidadRepository;
     private final CourseTypeRepository tipoCursoRepository;
+    private final SchedulingRulesValidator schedulingRulesValidator;
 
-    public CourseServiceImpl(CourseRepository cursoRepository, ModeRepository modalidadRepository, CourseTypeRepository tipoCursoRepository) {
+    public CourseServiceImpl(CourseRepository cursoRepository, ModeRepository modalidadRepository,
+                             CourseTypeRepository tipoCursoRepository,
+                             SchedulingRulesValidator schedulingRulesValidator) {
         this.cursoRepository = cursoRepository;
         this.modalidadRepository = modalidadRepository;
         this.tipoCursoRepository = tipoCursoRepository;
+        this.schedulingRulesValidator = schedulingRulesValidator;
     }
 
 
@@ -43,8 +48,15 @@ public class CourseServiceImpl implements CourseService {
         if (request.getSemestre() < 1) {
             throw new RuntimeException("Entrada invalida");
         }
+        int sesiones = request.getSesionesSemanales() != null ? request.getSesionesSemanales() : 1;
+        schedulingRulesValidator.validateCourseSessions(sesiones);
         ModelMapper mapper = new ModelMapper();
         Course curso = mapper.map(request, Course.class);
+        curso.setSesionesSemanales(sesiones);
+        curso.setRequiereComputadores(Boolean.TRUE.equals(request.getRequiereComputadores()));
+        curso.setRequiereSillasMoviles(Boolean.TRUE.equals(request.getRequiereSillasMoviles()));
+        curso.setIdModalidad(modalidad);
+        curso.setIdTipoCurso(tipoCurso);
         cursoRepository.save(curso);
         return mapToResponse(request, modalidad, tipoCurso);
     }
@@ -68,8 +80,18 @@ public class CourseServiceImpl implements CourseService {
         CourseType tipoCurso = tipoCursoRepository.findById(request.getIdTipoCurso())
                 .orElseThrow(() -> new RuntimeException("Tipo de curso no encontrado"));
 
-        ModelMapper mapper = new ModelMapper();
-        cursoRepository.save(mapper.map(request, Course.class));
+        int sesiones = request.getSesionesSemanales() != null ? request.getSesionesSemanales() : 1;
+        schedulingRulesValidator.validateCourseSessions(sesiones);
+
+        curso.setNombre(request.getNombre());
+        curso.setSemestre(request.getSemestre());
+        curso.setCreditos(request.getCreditos());
+        curso.setIdModalidad(modalidad);
+        curso.setIdTipoCurso(tipoCurso);
+        curso.setSesionesSemanales(sesiones);
+        curso.setRequiereComputadores(Boolean.TRUE.equals(request.getRequiereComputadores()));
+        curso.setRequiereSillasMoviles(Boolean.TRUE.equals(request.getRequiereSillasMoviles()));
+        cursoRepository.save(curso);
 
         return mapToResponse(request, modalidad, tipoCurso);
     }
@@ -111,6 +133,9 @@ public class CourseServiceImpl implements CourseService {
                 .tipoCurso(tipoCurso.getNombre())
                 .creditos(dto.getCreditos())
                 .semestre(dto.getSemestre())
+                .sesionesSemanales(dto.getSesionesSemanales())
+                .requiereComputadores(dto.getRequiereComputadores())
+                .requiereSillasMoviles(dto.getRequiereSillasMoviles())
                 .build();
         return res;
     }

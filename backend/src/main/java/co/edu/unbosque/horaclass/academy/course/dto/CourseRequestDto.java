@@ -15,4 +15,7 @@ public class CourseRequestDto {
     private int creditos;
     private int idModalidad;
     private int idTipoCurso;
+    private Integer sesionesSemanales;
+    private Boolean requiereComputadores;
+    private Boolean requiereSillasMoviles;
 }

@@ -20,4 +20,10 @@ public class CourseRespondeDto {
     private String modalidad;  // Nombre de la modalidad, no ID
 
     private String tipoCurso;  // Nombre del tipo, no ID
+
+    private Integer sesionesSemanales;
+
+    private Boolean requiereComputadores;
+
+    private Boolean requiereSillasMoviles;
 }

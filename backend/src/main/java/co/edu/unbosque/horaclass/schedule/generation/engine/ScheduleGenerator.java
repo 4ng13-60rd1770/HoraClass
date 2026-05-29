@@ -3,11 +3,14 @@ package co.edu.unbosque.horaclass.schedule.generation.engine;
 import co.edu.unbosque.horaclass.academy.classroom.model.Classroom;
 import co.edu.unbosque.horaclass.academy.group.model.Group;
 import co.edu.unbosque.horaclass.academy.teacher.model.Teacher;
+import co.edu.unbosque.horaclass.academy.teacher.repository.TeacherCourseRepository;
+import co.edu.unbosque.horaclass.schedule.config.SchedulingProperties;
 import co.edu.unbosque.horaclass.schedule.generation.model.ConflictReason;
 import co.edu.unbosque.horaclass.schedule.generation.model.Schedule;
 import co.edu.unbosque.horaclass.schedule.generation.model.ScheduleConflict;
 import co.edu.unbosque.horaclass.schedule.generation.model.ScheduleEntry;
 import co.edu.unbosque.horaclass.schedule.timeslot.model.TimeSlot;
+import co.edu.unbosque.horaclass.schedule.validation.SchedulingRulesValidator;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -27,6 +30,18 @@ import java.util.stream.Collectors;
  */
 @Component
 public class ScheduleGenerator {
+
+    private final SchedulingRulesValidator schedulingRulesValidator;
+    private final SchedulingProperties schedulingProperties;
+    private final TeacherCourseRepository teacherCourseRepository;
+
+    public ScheduleGenerator(SchedulingRulesValidator schedulingRulesValidator,
+                             SchedulingProperties schedulingProperties,
+                             TeacherCourseRepository teacherCourseRepository) {
+        this.schedulingRulesValidator = schedulingRulesValidator;
+        this.schedulingProperties = schedulingProperties;
+        this.teacherCourseRepository = teacherCourseRepository;
+    }
 
     /**
      * Genera un horario académico asignando para cada grupo:
@@ -100,51 +115,85 @@ public class ScheduleGenerator {
             cargaActualDocente.put(d.getIdProfesor(), 0);
         }
 
+        // Mapa: grupoId -> docente asignado en la primera sesión
+        Map<String, Teacher> docentePorGrupo = new HashMap<>();
+
+        List<TimeSlot> franjasValidas = franjas.stream()
+                .filter(schedulingRulesValidator::isSlotValidForScheduling)
+                .collect(Collectors.toList());
+
         // Ordenar grupos por cupo máximo descendente (los más grandes primero, más difíciles de asignar)
         grupos.sort(Comparator.comparingInt(Group::getCupoMaximo).reversed());
 
         for (Group grupo : grupos) {
-            AssignmentResult resultado = intentarAsignar(
-                    grupo, docentes, franjas, aulas,
-                    docentePorFranja, aulaPorFranja, cargaActualDocente);
+            int sesionesRequeridas = obtenerSesionesSemanales(grupo);
+            Teacher docenteGrupo = grupo.getProfesor();
 
-            if (resultado.isExitoso()) {
-                ScheduleEntry entry = new ScheduleEntry();
-                entry.setGrupo(grupo);
-                entry.setFranja(resultado.getFranja());
-                entry.setDocente(resultado.getDocente());
-                entry.setAula(resultado.getAula());
-                entry.setEstado("ACTIVO");
+            for (int sesion = 0; sesion < sesionesRequeridas; sesion++) {
+                List<Teacher> docentesCandidatos = resolverDocentesCandidatos(
+                        grupo, docentes, docenteGrupo, docentePorGrupo);
 
-                schedule.agregarEntry(entry);
+                AssignmentResult resultado = intentarAsignar(
+                        grupo, docentesCandidatos, franjasValidas, aulas,
+                        docentePorFranja, aulaPorFranja, cargaActualDocente);
 
-                // Actualizar mapas de ocupación
-                Long franjaId = resultado.getFranja().getIdFranja();
-                docentePorFranja.computeIfAbsent(franjaId, k -> new HashSet<>())
-                        .add(resultado.getDocente().getIdProfesor());
-                aulaPorFranja.computeIfAbsent(franjaId, k -> new HashSet<>())
-                        .add(resultado.getAula().getIdSalon());
+                if (resultado.isExitoso()) {
+                    ScheduleEntry entry = new ScheduleEntry();
+                    entry.setGrupo(grupo);
+                    entry.setFranja(resultado.getFranja());
+                    entry.setDocente(resultado.getDocente());
+                    entry.setAula(resultado.getAula());
+                    entry.setEstado("ACTIVO");
 
-                // Actualizar carga horaria del docente (sumar créditos del curso)
-                int creditosCurso = grupo.getCurso() != null ? grupo.getCurso().getCreditos() : 2;
-                cargaActualDocente.merge(resultado.getDocente().getIdProfesor(),
-                        creditosCurso, Integer::sum);
+                    schedule.agregarEntry(entry);
+                    docentePorGrupo.putIfAbsent(grupo.getIdGrupo(), resultado.getDocente());
 
-            } else {
-                ScheduleConflict conflicto = new ScheduleConflict();
-                conflicto.setGrupo(grupo);
-                conflicto.setMotivo(resultado.getMotivo());
-                conflicto.setDescripcion(resultado.getDescripcion());
-                conflicto.setEstado("PENDIENTE");
-                conflicto.setFechaDeteccion(LocalDateTime.now());
+                    Long franjaId = resultado.getFranja().getIdFranja();
+                    docentePorFranja.computeIfAbsent(franjaId, k -> new HashSet<>())
+                            .add(resultado.getDocente().getIdProfesor());
+                    aulaPorFranja.computeIfAbsent(franjaId, k -> new HashSet<>())
+                            .add(resultado.getAula().getIdSalon());
 
-                schedule.agregarConflicto(conflicto);
+                    int horasSesion = schedulingProperties.getDuracionSesionHoras();
+                    cargaActualDocente.merge(resultado.getDocente().getIdProfesor(),
+                            horasSesion, Integer::sum);
+
+                } else {
+                    ScheduleConflict conflicto = new ScheduleConflict();
+                    conflicto.setGrupo(grupo);
+                    conflicto.setMotivo(resultado.getMotivo());
+                    conflicto.setDescripcion(resultado.getDescripcion()
+                            + " (sesión " + (sesion + 1) + " de " + sesionesRequeridas + ")");
+                    conflicto.setEstado("PENDIENTE");
+                    conflicto.setFechaDeteccion(LocalDateTime.now());
+                    schedule.agregarConflicto(conflicto);
+                }
             }
         }
 
         detectarConflictosDeValidacion(schedule);
 
         return schedule;
+    }
+
+    private int obtenerSesionesSemanales(Group grupo) {
+        if (grupo.getCurso() != null && grupo.getCurso().getSesionesSemanales() != null) {
+            return grupo.getCurso().getSesionesSemanales();
+        }
+        return schedulingProperties.getSesionesSemanalesMin();
+    }
+
+    private List<Teacher> resolverDocentesCandidatos(Group grupo,
+                                                      List<Teacher> docentes,
+                                                      Teacher docenteGrupo,
+                                                      Map<String, Teacher> docentePorGrupo) {
+        if (docentePorGrupo.containsKey(grupo.getIdGrupo())) {
+            return List.of(docentePorGrupo.get(grupo.getIdGrupo()));
+        }
+        if (docenteGrupo != null) {
+            return List.of(docenteGrupo);
+        }
+        return docentes;
     }
 
     private void detectarConflictosDeValidacion(Schedule schedule) {
@@ -248,23 +297,24 @@ public class ScheduleGenerator {
         int mejorPuntaje = -1;
 
         for (TimeSlot franja : franjas) {
-            // Validar que la franja no está bloqueada
-            if (franja.getBloqueado()) continue;
+            if (!schedulingRulesValidator.isSlotValidForScheduling(franja)) continue;
 
             for (Teacher docente : docentes) {
-                // ======== RESTRICCIONES DURAS ========
+                if (grupo.getCurso() != null
+                        && !teacherCourseRepository.existsByIdProfesorAndIdCurso(
+                                docente.getIdProfesor(), grupo.getCurso().getIdCurso())) {
+                    continue;
+                }
+                if (!schedulingRulesValidator.teacherAcceptsSlot(docente, franja)) continue;
 
-                // 1. Sin cruce de docente: el docente no debe estar asignado en esta franja
                 Set<Long> docentesEnFranja = docentePorFranja.getOrDefault(
                         franja.getIdFranja(), Collections.emptySet());
                 if (docentesEnFranja.contains(docente.getIdProfesor())) continue;
 
-                // 2. Carga máxima: el docente no debe exceder su carga horaria
-                int creditosCurso = grupo.getCurso() != null ? grupo.getCurso().getCreditos() : 2;
+                int horasSesion = schedulingProperties.getDuracionSesionHoras();
                 int cargaActual = cargaActualDocente.getOrDefault(docente.getIdProfesor(), 0);
-                if (cargaActual + creditosCurso > docente.getCargaHoras()) continue;
+                if (cargaActual + horasSesion > docente.getCargaHoras()) continue;
 
-                // 3. Buscar un aula disponible para esta franja con capacidad suficiente
                 Classroom aulaDisponible = buscarAulaDisponible(
                         grupo, franja, aulas, aulaPorFranja);
                 if (aulaDisponible == null) continue;
@@ -317,10 +367,11 @@ public class ScheduleGenerator {
                 franja.getIdFranja(), Collections.emptySet());
 
         return aulas.stream()
-                .filter(a -> a.getDisponible()) // Aula disponible
-                .filter(a -> !aulasOcupadas.contains(a.getIdSalon())) // No ocupada en esta franja
-                .filter(a -> a.getCapacidad() >= grupo.getCupoMaximo()) // Capacidad suficiente
-                .min(Comparator.comparingInt(Classroom::getCapacidad)) // Preferir la más pequeña que quepa
+                .filter(a -> a.getDisponible())
+                .filter(a -> !aulasOcupadas.contains(a.getIdSalon()))
+                .filter(a -> a.getCapacidad() >= grupo.getCupoMaximo())
+                .filter(a -> schedulingRulesValidator.classroomMeetsCourseRequirements(a, grupo.getCurso()))
+                .min(Comparator.comparingInt(Classroom::getCapacidad))
                 .orElse(null);
     }
 
@@ -363,9 +414,9 @@ public class ScheduleGenerator {
 
         // Verificar si todos los docentes alcanzaron su carga máxima
         boolean todosEnCargaMaxima = docentes.stream().allMatch(d -> {
-            int creditosCurso = grupo.getCurso() != null ? grupo.getCurso().getCreditos() : 2;
+            int horasSesion = schedulingProperties.getDuracionSesionHoras();
             int carga = cargaActualDocente.getOrDefault(d.getIdProfesor(), 0);
-            return carga + creditosCurso > d.getCargaHoras();
+            return carga + horasSesion > d.getCargaHoras();
         });
         if (todosEnCargaMaxima) {
             return AssignmentResult.fallo(

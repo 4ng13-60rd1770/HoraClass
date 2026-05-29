@@ -14,4 +14,6 @@ public class ClassroomRequestDto {
     private String tipo;
     private String departamento;
     private Boolean disponible;
+    private Boolean tieneComputadores;
+    private Boolean sillasMoviles;
 }

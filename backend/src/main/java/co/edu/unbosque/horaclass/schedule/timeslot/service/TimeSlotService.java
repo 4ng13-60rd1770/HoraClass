@@ -4,6 +4,7 @@ import co.edu.unbosque.horaclass.schedule.timeslot.dto.TimeSlotRequestDto;
 import co.edu.unbosque.horaclass.schedule.timeslot.dto.TimeSlotResponseDto;
 import co.edu.unbosque.horaclass.schedule.timeslot.model.TimeSlot;
 import co.edu.unbosque.horaclass.schedule.timeslot.repository.TimeSlotRepository;
+import co.edu.unbosque.horaclass.schedule.validation.SchedulingRulesValidator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,12 +16,16 @@ import java.util.stream.Collectors;
 public class TimeSlotService {
 
     private final TimeSlotRepository timeSlotRepository;
+    private final SchedulingRulesValidator schedulingRulesValidator;
 
-    public TimeSlotService(TimeSlotRepository timeSlotRepository) {
+    public TimeSlotService(TimeSlotRepository timeSlotRepository,
+                           SchedulingRulesValidator schedulingRulesValidator) {
         this.timeSlotRepository = timeSlotRepository;
+        this.schedulingRulesValidator = schedulingRulesValidator;
     }
 
     public TimeSlotResponseDto crear(TimeSlotRequestDto request) {
+        schedulingRulesValidator.validateTimeSlotRequest(request);
         TimeSlot slot = new TimeSlot();
         slot.setDiaSemana(request.getDiaSemana());
         slot.setHoraInicio(request.getHoraInicio());
@@ -33,6 +38,7 @@ public class TimeSlotService {
     }
 
     public TimeSlotResponseDto actualizar(Long id, TimeSlotRequestDto request) {
+        schedulingRulesValidator.validateTimeSlotRequest(request);
         TimeSlot slot = timeSlotRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Franja horaria con ID " + id + " no existe"));
         slot.setDiaSemana(request.getDiaSemana());

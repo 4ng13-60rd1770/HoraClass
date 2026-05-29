@@ -3,8 +3,11 @@ package co.edu.unbosque.horaclass.academy.teacher.service.impl;
 import co.edu.unbosque.horaclass.academy.teacher.dto.TeacherRequestDto;
 import co.edu.unbosque.horaclass.academy.teacher.dto.TeacherResponseDto;
 import co.edu.unbosque.horaclass.academy.teacher.model.Teacher;
+import co.edu.unbosque.horaclass.academy.teacher.model.TeacherCourse;
+import co.edu.unbosque.horaclass.academy.teacher.repository.TeacherCourseRepository;
 import co.edu.unbosque.horaclass.academy.teacher.repository.TeacherRepository;
 import co.edu.unbosque.horaclass.academy.teacher.service.TeacherService;
+import co.edu.unbosque.horaclass.schedule.validation.SchedulingRulesValidator;
 import co.edu.unbosque.horaclass.user.model.State;
 import co.edu.unbosque.horaclass.user.model.User;
 import co.edu.unbosque.horaclass.user.repository.StateRepository;
@@ -21,18 +24,24 @@ import java.util.stream.Collectors;
 public class TeacherServiceImpl implements TeacherService {
 
     private final TeacherRepository teacherRepository;
+    private final TeacherCourseRepository teacherCourseRepository;
     private final UserRepository userRepository;
     private final StateRepository stateRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SchedulingRulesValidator schedulingRulesValidator;
 
     public TeacherServiceImpl(TeacherRepository teacherRepository,
+                               TeacherCourseRepository teacherCourseRepository,
                                UserRepository userRepository,
                                StateRepository stateRepository,
-                               PasswordEncoder passwordEncoder) {
+                               PasswordEncoder passwordEncoder,
+                               SchedulingRulesValidator schedulingRulesValidator) {
         this.teacherRepository = teacherRepository;
+        this.teacherCourseRepository = teacherCourseRepository;
         this.userRepository = userRepository;
         this.stateRepository = stateRepository;
         this.passwordEncoder = passwordEncoder;
+        this.schedulingRulesValidator = schedulingRulesValidator;
     }
 
     @Override
@@ -61,9 +70,15 @@ public class TeacherServiceImpl implements TeacherService {
         teacher.setUsuario(savedUser);
         teacher.setDepartamento(request.getCarrera());
         teacher.setEspecialidad(request.getCarrera());
-        teacher.setCargaHoras(request.getCargaHoras() != null ? request.getCargaHoras() : 0);
+        teacher.setEscalafon(request.getEscalafon());
+        teacher.setTipoVinculacion(request.getTipoVinculacion());
+        teacher.setRestriccionHorario(request.getRestriccionHorario());
+        teacher.setCargaHoras(schedulingRulesValidator.resolveCargaHoras(
+                request.getTipoVinculacion(), request.getCargaHoras()));
 
-        return mapToDto(teacherRepository.save(teacher));
+        Teacher saved = teacherRepository.save(teacher);
+        syncTeacherCourses(saved.getIdProfesor(), request.getCursosHabilitados());
+        return mapToDto(saved);
     }
 
     @Override
@@ -88,8 +103,17 @@ public class TeacherServiceImpl implements TeacherService {
                 .orElseThrow(() -> new RuntimeException("Profesor no encontrado con ID: " + id));
         teacher.setDepartamento(request.getCarrera());
         teacher.setEspecialidad(request.getCarrera());
-        if (request.getCargaHoras() != null) teacher.setCargaHoras(request.getCargaHoras());
-        return mapToDto(teacherRepository.save(teacher));
+        if (request.getEscalafon() != null) teacher.setEscalafon(request.getEscalafon());
+        if (request.getTipoVinculacion() != null) teacher.setTipoVinculacion(request.getTipoVinculacion());
+        if (request.getRestriccionHorario() != null) teacher.setRestriccionHorario(request.getRestriccionHorario());
+        teacher.setCargaHoras(schedulingRulesValidator.resolveCargaHoras(
+                request.getTipoVinculacion() != null ? request.getTipoVinculacion() : teacher.getTipoVinculacion(),
+                request.getCargaHoras()));
+        Teacher saved = teacherRepository.save(teacher);
+        if (request.getCursosHabilitados() != null) {
+            syncTeacherCourses(saved.getIdProfesor(), request.getCursosHabilitados());
+        }
+        return mapToDto(saved);
     }
 
     @Override
@@ -114,6 +138,22 @@ public class TeacherServiceImpl implements TeacherService {
         dto.setEspecialidad(teacher.getEspecialidad());
         dto.setCargaHoras(teacher.getCargaHoras());
         dto.setEscalafon(teacher.getEscalafon());
+        dto.setTipoVinculacion(teacher.getTipoVinculacion());
+        dto.setRestriccionHorario(teacher.getRestriccionHorario());
+        dto.setCursosHabilitados(teacherCourseRepository.findByIdProfesor(teacher.getIdProfesor())
+                .stream()
+                .map(TeacherCourse::getIdCurso)
+                .toList());
         return dto;
+    }
+
+    private void syncTeacherCourses(Long idProfesor, List<Integer> cursos) {
+        if (cursos == null) {
+            return;
+        }
+        teacherCourseRepository.deleteByIdProfesor(idProfesor);
+        for (Integer idCurso : cursos) {
+            teacherCourseRepository.save(new TeacherCourse(idProfesor, idCurso));
+        }
     }
 }

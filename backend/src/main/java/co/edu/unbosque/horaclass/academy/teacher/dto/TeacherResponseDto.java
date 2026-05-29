@@ -1,12 +1,12 @@
 package co.edu.unbosque.horaclass.academy.teacher.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
-//@AllArgsConstructor
 public class TeacherResponseDto {
 
     private Long idProfesor;
@@ -22,4 +22,10 @@ public class TeacherResponseDto {
     private Integer cargaHoras;
 
     private String escalafon;
+
+    private String tipoVinculacion;
+
+    private String restriccionHorario;
+
+    private List<Integer> cursosHabilitados;
 }
