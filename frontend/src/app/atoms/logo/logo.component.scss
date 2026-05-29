@@ -1,25 +1,33 @@
 .logo {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
+
+  &__img {
+    width: auto;
+    height: 36px;
+    max-width: 36px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
 
   &__text {
     display: flex;
     flex-direction: column;
-    line-height: 1.1;
+    line-height: 1;
   }
 
   &__uni {
-    font-size: 0.6rem;
-    font-weight: 500;
-    color: #888;
-    letter-spacing: 0.05em;
+    font-size: 0.55rem;
+    font-weight: 600;
+    color: var(--color-text-muted, #475569);
+    letter-spacing: 0.16em;
   }
 
   &__name {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 800;
-    color: #5a4e3a;
-    letter-spacing: 0.03em;
+    color: var(--color-primary, #4a7c59);
+    letter-spacing: -0.02em;
   }
 }
