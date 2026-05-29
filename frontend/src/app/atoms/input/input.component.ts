@@ -9,6 +9,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
   template: `
     <div class="input-wrapper">
       <input
+        [id]="inputId || null"
         [type]="showPassword ? 'text' : type"
         [placeholder]="placeholder"
         [value]="value"
@@ -30,6 +31,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR, FormsModule } from '@angular/f
 export class InputComponent implements ControlValueAccessor {
   @Input() type: 'text' | 'password' | 'email' = 'text';
   @Input() placeholder = '';
+  @Input() inputId = '';
 
   value = '';
   showPassword = false;
