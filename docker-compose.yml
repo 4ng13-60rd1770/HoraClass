@@ -24,7 +24,8 @@ services:
       dockerfile: Dockerfile
     container_name: horaclass-backend
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hcdb
       SPRING_DATASOURCE_USERNAME: postgres
