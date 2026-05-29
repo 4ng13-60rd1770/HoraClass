@@ -8,10 +8,10 @@
   background-color: #ffffff;
 }
 
-$primary-color: #8db33a; 
-$accent-color: #e07b2a;  
-$text-main: #2d3748;
-$text-muted: #718096;
+$primary-color: #4a6318;
+$accent-color: #e07b2a;
+$text-main: #1a202c;
+$text-muted: #475569;
 $background-light: #f7fafc;
 
 .login-container {
@@ -40,11 +40,11 @@ $background-light: #f7fafc;
 .login__aside-curve {
   position: absolute;
   top: 0;
-  right: -2px;       
-  height: 100vh;     
-  width: 150px;      
-  z-index: 2;        
-  pointer-events: none; 
+  right: -1px;
+  height: 100%;
+  width: 120px;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .login__aside-overlay {
@@ -71,18 +71,8 @@ $background-light: #f7fafc;
 
 .login__aside-subtitle {
   font-size: 1.1rem;
-  opacity: 0.9;
+  color: #f1f5f9;
   line-height: 1.5;
-}
-
-.login__aside-curve {
-  position: absolute;
-  top: 0;
-  right: -1px;
-  height: 100%;
-  width: 120px;
-  z-index: 2;
-  pointer-events: none;
 }
 
 .login__main {
@@ -174,7 +164,7 @@ $background-light: #f7fafc;
 app-input {
   display: block;
   width: 100%;
-  
+
   ::ng-deep input {
     width: 100%;
     padding: 0.85rem 1rem;
@@ -182,7 +172,7 @@ app-input {
     border: 1.5px solid #e2e8f0;
     border-radius: 10px;
     background-color: $background-light;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease-in-out;
     box-sizing: border-box;
 
     &:focus {
@@ -190,6 +180,17 @@ app-input {
       border-color: $primary-color;
       background-color: #ffffff;
       box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
+    }
+  }
+
+  &.login__input--error {
+    ::ng-deep input {
+      border-color: #c53030 !important;
+      background-color: #fffafb;
+
+      &:focus {
+        box-shadow: 0 0 0 4px rgba(#c53030, 0.15) !important;
+      }
     }
   }
 }
@@ -240,8 +241,8 @@ app-input {
   }
 
   &:disabled {
-    background-color: #cbd5e1;
-    color: #94a3b8;
+    background-color: #e2e8f0;
+    color: #475569;
     cursor: not-allowed;
     box-shadow: none;
   }
@@ -270,42 +271,10 @@ app-input {
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
-app-input {
-  display: block;
-  width: 100%;
-  
-  ::ng-deep input {
-    width: 100%;
-    padding: 0.85rem 1rem;
-    font-size: 0.95rem;
-    border: 1.5px solid #e2e8f0;
-    border-radius: 10px;
-    background-color: $background-light;
-    transition: all 0.2s ease-in-out;
-    box-sizing: border-box;
-
-    &:focus {
-      outline: none;
-      border-color: $primary-color;
-      background-color: #ffffff;
-      box-shadow: 0 0 0 4px rgba($primary-color, 0.1);
-    }
-  }
-  &.login__input--error {
-    ::ng-deep input {
-      border-color: #e53e3e !important; 
-      background-color: #fffafb;      
-      
-      &:focus {
-        box-shadow: 0 0 0 4px rgba(#e53e3e, 0.15) !important;
-      }
-    }
-  }
-}
 
 .login__field-error {
-  color: #e53e3e;
-  font-size: 0.72rem; 
+  color: #9b1c1c;
+  font-size: 0.72rem;
   font-weight: 600;
   margin-top: 0.35rem;
   padding-left: 0.2rem;
