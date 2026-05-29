@@ -13,3 +13,12 @@ export interface StoredUser {
   username: string;
   roles: string[];
 }
+
+export interface MessageResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}

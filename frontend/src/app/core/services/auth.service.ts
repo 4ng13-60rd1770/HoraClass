@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, LoginResponse, StoredUser } from '../models/auth.models';
+import { LoginRequest, LoginResponse, MessageResponse, ResetPasswordRequest, StoredUser } from '../models/auth.models';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -18,6 +18,14 @@ export class AuthService {
         localStorage.setItem(this.USER_KEY, JSON.stringify({ username: response.username, roles: response.roles }));
       })
     );
+  }
+
+  forgotPassword(username: string): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/auth/forgot-password`, { username });
+  }
+
+  resetPassword(payload: ResetPasswordRequest): Observable<MessageResponse> {
+    return this.http.post<MessageResponse>(`${environment.apiUrl}/auth/reset-password`, payload);
   }
 
   logout(): void {
